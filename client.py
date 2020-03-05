@@ -1,6 +1,6 @@
 import zmq
 
-def client(master_ip,master_ports):
+def clientMasterConnection(master_ip,master_ports):
     context = zmq.Context()
     for i in range(master_ports):
         socket = context.socket(zmq.REQ)
@@ -30,6 +30,8 @@ def client(master_ip,master_ports):
                 print("upload completed successfully")
         i+=1
         
+def client(master_ip,master_ports):
+    clientMasterConnection(master_ip,master_ports)
         
 
 

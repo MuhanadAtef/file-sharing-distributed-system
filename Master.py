@@ -19,8 +19,6 @@ def masterClientConnection(masterIndex):
             socket.recv_string()
             socket.send_string("success")
             
-        
-        
 
 def masterDatakeeperConnection(masterIndex,numberOfNodes_Datakeeper):
     print("Master index = "+ str(masterIndex))
