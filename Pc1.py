@@ -1,5 +1,6 @@
 import multiprocessing 
 import Master    
+import client
 import DataKeeper
     
 
@@ -16,7 +17,9 @@ if __name__ == '__main__':
         for k in range(numberOfprocessesOfNodes):
             t= multiprocessing.Process(target=DataKeeper.dataKeeper,args=(i,k,numberOfprocessesOfNodes)) 
             processes.append(t)
-        
+    t=multiprocessing.Process(target=client.client,args=("tcp://localhost:",numberOfprocessesOfMaster))
+    processes.append(t)
+
     for j in processes:
         j.start()
         
