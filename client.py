@@ -13,14 +13,13 @@ def clientMasterConnection(master_ip,master_ports):
         if i==10:
             break
         if i%2==0:
-            print ("Download %d...\n" %i)
             messege=["download",i]
         else:
             messege=["upload",i]
         socket.send_pyobj(messege)
         #  Get the reply.
         messege = socket.recv_pyobj()
-        print ("receive 1\n")
+        print ("receive 1")
         if i%2 != 0:
             # Sending dummy data as we want one more receive from master "success messege"
             socket.send_string("")
