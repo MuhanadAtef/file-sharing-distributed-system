@@ -38,12 +38,14 @@ def clientMasterConnection(master_ip,starting_port,master_ports,commands):
             if command=="upload":
                 f= open(path,'rb')
                 video=f.read()
+                datakeeperSocket.send_pyobj([video,path])
                 f.close()
-                datakeeperSocket.send_pyobj(video)
                 datakeeperSocket.recv()
                 datakeeperSocket.close()
             else:
                 video=datakeeperSocket.recv_pyobj()
+                f=open(path,'wb')
+                f.write(video)
                 datakeeperSocket.close()
         else:
             print("Unknown command")
