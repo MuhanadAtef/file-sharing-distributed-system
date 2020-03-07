@@ -14,14 +14,14 @@ def masterClientConnection(clientSocket):
     clientSocket.send_pyobj(port)
 
 def masterDatakeeperConnection(masterIndex,datakeeperSocket):
-    if masterIndex==0:
-        try:
-            string = datakeeperSocket.recv_string()
-            topic, messagedata , NodeIndex , processesIndex  = string.split()
-        except zmq.error.Again:
-            return
-        if topic=="1" and messagedata=="1" :
-            print("Master index "+ str(masterIndex )+" Node " +NodeIndex+" Process "+ processesIndex +" is Alive\n")
+    
+    try:
+        string = datakeeperSocket.recv_string()
+        topic, messagedata , NodeIndex , processesIndex  = string.split()
+    except zmq.error.Again:
+        return
+    if topic=="1" and messagedata=="1" :
+        print("Master index "+ str(masterIndex )+" Node " +NodeIndex+" Process "+ processesIndex +" is Alive\n")
 
 
 
@@ -38,20 +38,20 @@ def initialzeClientMasterConnection(masterIndex,startingPortMasterClient):
 def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper):
     # Bind ports for datakeeper
     print("Master index = "+ str(masterIndex))
-    if masterIndex==0: 
-        context = zmq.Context()
-        datakeeperSocket = context.socket(zmq.SUB)
-        datakeeper_StartPort = 5556
-        portArr=[]
-        for i in range(numberOfNodes_Datakeeper):     
-            t=datakeeper_StartPort+i
-            portArr.append(t)
-        for j in portArr:
-            datakeeperSocket.connect ("tcp://127.0.0.1:%s" %  str(j))
-        topicfilter = "1"
-        datakeeperSocket.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
-        datakeeperSocket.RCVTIMEO = 1
-        return datakeeperSocket
+
+    context = zmq.Context()
+    datakeeperSocket = context.socket(zmq.SUB)
+    datakeeper_StartPort = 5556
+    portArr=[]
+    for i in range(numberOfNodes_Datakeeper):     
+        t=datakeeper_StartPort+i
+        portArr.append(t)
+    for j in portArr:
+        datakeeperSocket.connect ("tcp://127.0.0.1:%s" %  str(j))
+    topicfilter = "1"
+    datakeeperSocket.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
+    datakeeperSocket.RCVTIMEO = 1
+    return datakeeperSocket
 
 
 def masterTracker(masterIndex,numberOfNodes_Datakeeper,startingPortMasterClient):
@@ -62,8 +62,8 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper,startingPortMasterClient)
     while True:
         #Connecting with client
         masterClientConnection(clientSocket)
-        if masterIndex==0: 
-            # Connecting with data keepers
-            masterDatakeeperConnection(masterIndex,datakeeperSocket)
+        
+        # Connecting with data keepers
+        masterDatakeeperConnection(masterIndex,datakeeperSocket)
         
         
