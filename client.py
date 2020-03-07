@@ -1,36 +1,55 @@
 import zmq
+import random
 
-def clientMasterConnection(master_ip,master_ports):
+def clientMasterConnection(master_ip,starting_port,master_ports,commands):
     context = zmq.Context()
+    masterSocket = context.socket(zmq.REQ)
+    datakeeperSocket = context.socket(zmq.PAIR)
+    ls=[] # Holding ports of the master to be connected to client
+    # Generate random connection to master processes
     for i in range(master_ports):
-        socket = context.socket(zmq.REQ)
-        socket.connect(master_ip + str(i+7000))
-    print("Client connected to all master processes successfully!!!")
+        ls.append(starting_port+i)
+    ran=random.sample(ls,k=master_ports)
+    for i in ran:
+        masterSocket.connect(master_ip + str(i))
+    
+    print("---------------------------------------------------------------")
+    print("-- Client connected to all master processes successfully !!! --")
+    print("---------------------------------------------------------------")
 
-    i=0
-    while True:
-        messege=["",0]
-        if i==10:
-            break
-        if i%2==0:
-            messege=["download",i]
+    for i in commands:
+        # Getting path and command
+        com = i.split()
+        command=com[0]
+        path=""
+        for j in range(len(com)):
+            if j==0:
+                command=com[j]
+            else:
+                path+=com[j]
+                if j != len(com)-1:
+                    path+=" "
+
+        if command=="upload" or command=="download":
+            masterSocket.send_pyobj([command,path])
+            messege = masterSocket.recv_pyobj()
+            datakeeperSocket.connect(str(messege[0])+str(messege[1]))
+            print (messege)
+            if command=="upload":
+                f= open(path,'rb')
+                video=f.read()
+                f.close()
+                datakeeperSocket.send_pyobj(video)
+                datakeeperSocket.recv()
+                datakeeperSocket.close()
+            else:
+                video=datakeeperSocket.recv_pyobj()
+                datakeeperSocket.close()
         else:
-            messege=["upload",i]
-        socket.send_pyobj(messege)
-        #  Get the reply.
-        messege = socket.recv_pyobj()
-        print ("receive 1")
-        if i%2 != 0:
-            # Sending dummy data as we want one more receive from master "success messege"
-            socket.send_string("")
-            #  Get the reply.
-            messege = socket.recv_string()
-            if messege=="success":
-                print("upload completed successfully")
-        i+=1
+            print("Unknown command")
         
-def client(master_ip,master_ports):
-    clientMasterConnection(master_ip,master_ports)
+def client(master_ip,starting_port,master_ports,commands):
+    clientMasterConnection(master_ip,starting_port,master_ports,commands)
         
 
 

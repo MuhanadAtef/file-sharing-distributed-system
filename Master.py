@@ -9,20 +9,9 @@ def masterClientConnection(clientSocket):
         print(messege)
     except zmq.error.Again:
         return
-    # TODO: Function made by friedPotato7 use messege[upload/download,filename] and return arr[ip,port#,path of file] replaced by 8000
-    port=["tcp://*:",8000,"/file"]
+    # TODO: Function made by friedPotato7 use messege[upload/download,filename.mp4] and return arr[ip,port#,path of file] replaced by 8000
+    port=["tcp://localhost:",8000,"file.mp4"]
     clientSocket.send_pyobj(port)
-    print(port)
-    if messege[0]=="upload":
-        # If upload wait until receving sucess msg from datakeeper
-        clientSocket.RCVTIMEO = 3600000 # Wait for an hour to receive dummy data from client then it can be able to send success msg to client
-        try:
-            clientSocket.recv_string()
-        except zmq.error.Again:
-            print("Time out")
-            return
-        # TODO: Khaled || Mahmoud make a loop to receive success msg from the datakeeper then break the loop, ask me first !!! 
-        clientSocket.send_string("success")
             
 
 def masterDatakeeperConnection(masterIndex,datakeeperSocket):
