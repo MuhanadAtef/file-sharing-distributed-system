@@ -10,9 +10,8 @@ def masterClientConnection(clientSocket):
     except zmq.error.Again:
         return
     # TODO: Function made by friedPotato7 use messege[upload/download,filename.mp4] and return arr[ip,port#,path of file] replaced by 8000
-    port=["tcp://localhost:",8000,"file.mp4"]
+    port=["tcp://localhost:",8000,"Alberto Mardegan - Selfie del futuro.mp4"]
     clientSocket.send_pyobj(port)
-            
 
 def masterDatakeeperConnection(masterIndex,datakeeperSocket):
     if masterIndex==0:
@@ -26,9 +25,9 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket):
 
 
 
-def initialzeClientMasterConnection(masterIndex):
+def initialzeClientMasterConnection(masterIndex,startingPortMasterClient):
     # Bind ports for clients
-    clientPort=7000+masterIndex
+    clientPort=startingPortMasterClient+masterIndex
     context = zmq.Context()
     clientSocket = context.socket(zmq.REP)
     clientSocket.bind("tcp://*:%s" % clientPort)
@@ -55,9 +54,9 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper):
         return datakeeperSocket
 
 
-def masterTracker(masterIndex,numberOfNodes_Datakeeper):
+def masterTracker(masterIndex,numberOfNodes_Datakeeper,startingPortMasterClient):
     
-    clientSocket = initialzeClientMasterConnection(masterIndex)
+    clientSocket = initialzeClientMasterConnection(masterIndex,startingPortMasterClient)
     datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper)
     
     while True:

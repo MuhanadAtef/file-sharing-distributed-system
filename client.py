@@ -1,17 +1,17 @@
 import zmq
 import random
 
-def clientMasterConnection(master_ip,starting_port,master_ports,commands):
-    context = zmq.Context()
-    masterSocket = context.socket(zmq.REQ)
-    datakeeperSocket = context.socket(zmq.PAIR)
+def client(masterIp,startingPortMasterClient,numberOfprocessesOfMaster,commands):
+    context = zmq.Context() 
+    masterSocket = context.socket(zmq.REQ) # Master-client connection
+    datakeeperSocket = context.socket(zmq.PAIR) # Datakeeper-client connection
     ls=[] # Holding ports of the master to be connected to client
     # Generate random connection to master processes
-    for i in range(master_ports):
-        ls.append(starting_port+i)
-    ran=random.sample(ls,k=master_ports)
+    for i in range(numberOfprocessesOfMaster):
+        ls.append(startingPortMasterClient+i)
+    ran=random.sample(ls,k=numberOfprocessesOfMaster)
     for i in ran:
-        masterSocket.connect(master_ip + str(i))
+        masterSocket.connect(masterIp + str(i))
     
     print("---------------------------------------------------------------")
     print("-- Client connected to all master processes successfully !!! --")
@@ -38,21 +38,18 @@ def clientMasterConnection(master_ip,starting_port,master_ports,commands):
             if command=="upload":
                 f= open(path,'rb')
                 video=f.read()
-                datakeeperSocket.send_pyobj([video,path])
+                datakeeperSocket.send_pyobj([video,messege[2]])
                 f.close()
                 datakeeperSocket.recv()
                 datakeeperSocket.close()
             else:
+                datakeeperSocket.send_pyobj([path])
                 video=datakeeperSocket.recv_pyobj()
-                f=open(path,'wb')
-                f.write(video)
+                name=video[1].split("/")
+                f=open(name[-1],'wb')
+                f.write(video[0])
+                f.close()
+                print("Download completed successfully")
                 datakeeperSocket.close()
         else:
             print("Unknown command")
-        
-def client(master_ip,starting_port,master_ports,commands):
-    clientMasterConnection(master_ip,starting_port,master_ports,commands)
-        
-
-
-
