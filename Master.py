@@ -1,16 +1,40 @@
 import zmq
 
-def masterClientConnection(clientSocket):
+def clientRequestHandler(message, masterDataFile, dataKeepersState, syncLock):
+    if message[0] == "upload":
+        # Checks whether there is a free port (j) for each ip (i)
+        for i in dataKeepersState:
+            for j in dataKeepersState[i]:
+                syncLock.acquire()
+                if(dataKeepersState[i][j]):
+                    dataKeepersState[i][j] = False # Make Port Busy
+                    syncLock.release()
+                    return [i,j,message[1]]
+    elif message[0] == "download":
+        for i in masterDataFile:
+            for j in masterDataFile[i]:
+                for k in masterDataFile[i][j]:
+                    syncLock.acquire()
+                    if k == message[i] and dataKeepersState[i][j]:
+                        dataKeepersState[i][j] = False # Make Port Busy
+                        syncLock.release()
+                        return [i,j,message[1]]
+    return None
+
+
+def masterClientConnection(clientSocket,masterDataFile, dataKeepersState,syncLock):
     # Sending/Receiving data from client
     clientSocket.RCVTIMEO = 1
     # Wait for next request from client
+    message = None
     try:
         messege = clientSocket.recv_pyobj()
         print(messege)
     except zmq.error.Again:
         return
     # TODO: Function made by friedPotato7 use messege[upload/download,filename.mp4] and return arr[ip,port#,path of file] replaced by 8000
-    port=["tcp://localhost:",8000,"Alberto Mardegan - Selfie del futuro.mp4"]
+    # port = ["tcp://localhost:",8000,"Alberto Mardegan - Selfie del futuro.mp4"]
+    port = clientRequestHandler(message, masterDataFile, dataKeepersState,syncLock)
     clientSocket.send_pyobj(port)
 
 def masterDatakeeperConnection(masterIndex,datakeeperSocket):
@@ -54,14 +78,14 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper):
     return datakeeperSocket
 
 
-def masterTracker(masterIndex,numberOfNodes_Datakeeper,startingPortMasterClient):
+def masterTracker(masterIndex,numberOfNodes_Datakeeper,startingPortMasterClient,masterDataFile,dataKeepersState,syncLock):
     
     clientSocket = initialzeClientMasterConnection(masterIndex,startingPortMasterClient)
     datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper)
     
     while True:
         #Connecting with client
-        masterClientConnection(clientSocket)
+        masterClientConnection(clientSocket,masterDataFile, dataKeepersState, syncLock)
         
         # Connecting with data keepers
         masterDatakeeperConnection(masterIndex,datakeeperSocket)

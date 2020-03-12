@@ -12,9 +12,12 @@ if __name__ == '__main__':
     startingPortDatakeeperClient=8000 #first port between client/datakeeper
     masterIp="tcp://localhost:" #master ip
     processes=[]
-    
+    masterDataFile = multiprocessing.Manager().dict # masterDataFile = { ip1: { port1: [ file1, file2, ... ], port2: [...], ... }, ip2: {...} }
+    dataKeepersState = multiprocessing.Manager().dict # dataKeepersState = { ip1: { port1: True, port2: False, ... }, ip2: { port1: True, ... }, ... }
+    syncLock = multiprocessing.Manager().RLock
+
     for k in range(numberOfprocessesOfMaster):
-        t= multiprocessing.Process(target=Master.masterTracker,args=(k,numberOfNodes,startingPortMasterClient)) 
+        t= multiprocessing.Process(target=Master.masterTracker,args=(k,numberOfNodes,startingPortMasterClient,masterDataFile, dataKeepersState, syncLock)) 
         processes.append(t)
     for i in range(numberOfNodes):
         for k in range(numberOfprocessesOfNodes):
