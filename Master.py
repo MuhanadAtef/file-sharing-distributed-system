@@ -78,7 +78,7 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper):
     return datakeeperSocket
 
 
-def masterTracker(masterIndex,numberOfNodes_Datakeeper,startingPortMasterClient,masterDataFile,dataKeepersState,syncLock, filesInstanceCount):
+def masterTracker(masterIndex,numberOfNodes_Datakeeper,startingPortMasterClient,masterDataFile,dataKeepersState,syncLock, filesDictionary):
     
     clientSocket = initialzeClientMasterConnection(masterIndex,startingPortMasterClient)
     datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper)
