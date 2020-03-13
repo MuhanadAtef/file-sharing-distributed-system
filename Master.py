@@ -15,7 +15,7 @@ def clientRequestHandler(message, masterDataFile, dataKeepersState, syncLock):
             for j in masterDataFile[i]:
                 for k in masterDataFile[i][j]:
                     syncLock.acquire()
-                    if k == message[i] and dataKeepersState[i][j]:
+                    if k == message[1] and dataKeepersState[i][j]:
                         dataKeepersState[i][j] = False # Make Port Busy
                         syncLock.release()
                         return [i,j,message[1]]
@@ -78,7 +78,7 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper):
     return datakeeperSocket
 
 
-def masterTracker(masterIndex,numberOfNodes_Datakeeper,startingPortMasterClient,masterDataFile,dataKeepersState,syncLock):
+def masterTracker(masterIndex,numberOfNodes_Datakeeper,startingPortMasterClient,masterDataFile,dataKeepersState,syncLock, filesInstanceCount):
     
     clientSocket = initialzeClientMasterConnection(masterIndex,startingPortMasterClient)
     datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper)
