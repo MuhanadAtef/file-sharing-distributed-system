@@ -15,9 +15,10 @@ if __name__ == '__main__':
     masterDataFile = multiprocessing.Manager().dict # masterDataFile = { ip1: { port1: [ file1, file2, ... ], port2: [...], ... }, ip2: {...} }
     dataKeepersState = multiprocessing.Manager().dict # dataKeepersState = { ip1: { port1: True, port2: False, ... }, ip2: { port1: True, ... }, ... }
     syncLock = multiprocessing.Manager().RLock
+    filesInstanceCount = multiprocessing.Manager().dict
 
     for k in range(numberOfprocessesOfMaster):
-        t= multiprocessing.Process(target=Master.masterTracker,args=(k,numberOfNodes,startingPortMasterClient,masterDataFile, dataKeepersState, syncLock)) 
+        t= multiprocessing.Process(target=Master.masterTracker,args=(k,numberOfNodes,startingPortMasterClient,masterDataFile, dataKeepersState, syncLock, filesInstanceCount)) 
         processes.append(t)
     for i in range(numberOfNodes):
         for k in range(numberOfprocessesOfNodes):
