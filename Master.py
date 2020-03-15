@@ -78,7 +78,7 @@ def initialzeClientMasterConnection(masterIndex,startingPortMasterClient):
     return clientSocket
 
 
-def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState):
+def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState, syncLock):
     # Bind ports for datakeeper
     print("Master index = "+ str(masterIndex))
 
@@ -89,8 +89,10 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
     datakeepersAdresses=[]
     while initializedDataKeepers < numberOfNodes_Datakeeper * numberOfProcessesPerDataKeeper:
         address = masterReceiver.recv_pyobj()
+        syncLock.acquire()
         masterDataFile[address["ip"]][address["port"]] = []
         dataKeepersState[address["ip"]][address["port"]] = True
+        syncLock.release()
         datakeepersAdresses.append(str(address["ip"])+ str(address["port"]))
         initializedDataKeepers += 1
     datakeeperSocket = context.socket(zmq.SUB)
@@ -174,7 +176,7 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerData
     
 
     clientSocket = initialzeClientMasterConnection(masterIndex,startingPortMasterClient)
-    datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState)
+    datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState, syncLock)
     #nReplicates Master Datakeeper Connection
     nrSocket = nReplicatesMasterDatakeeper(masterIndex)
     while True:
