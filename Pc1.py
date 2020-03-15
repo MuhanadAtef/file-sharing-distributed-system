@@ -13,10 +13,11 @@ if __name__ == '__main__':
     masterIp="tcp://localhost:" #master ip
     replicatesCount=3 # count of replicates
     processes=[]
-    masterDataFile = multiprocessing.Manager().dict # masterDataFile = { ip1: { port1: [ file1, file2, ... ], port2: [...], ... }, ip2: {...} }
-    dataKeepersState = multiprocessing.Manager().dict # dataKeepersState = { ip1: { port1: True, port2: False, ... }, ip2: { port1: True, ... }, ... }
-    syncLock = multiprocessing.Manager().RLock
-    filesDictionary = multiprocessing.Manager().dict # filesDictionary = { filename1: [ { ip1: [port1, port2, ...], ip2: [...], ... } , instanceCount], filename2: [...] }
+    manager = multiprocessing.Manager()
+    masterDataFile = manager.dict # masterDataFile = { ip1: { port1: [ file1, file2, ... ], port2: [...], ... }, ip2: {...} }
+    dataKeepersState = manager.dict # dataKeepersState = { ip1: { port1: True, port2: False, ... }, ip2: { port1: True, ... }, ... }
+    syncLock = manager.RLock
+    filesDictionary = manager.dict # filesDictionary = { filename1: [ { ip1: [port1, port2, ...], ip2: [...], ... } , instanceCount], filename2: [...] }
     # filesDictionary["filenameKey.mp4"][1] = instanceCount
     # filesDictionary["filenameKey.mp4"][0]["tcp:127.0.0.1"] = [8000, 8001, 8002]
 
