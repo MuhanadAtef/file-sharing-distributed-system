@@ -1,5 +1,13 @@
 import zmq
 
+
+def getIp():
+    s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8",80))
+    print("\nMy IP:"+s.getsockname()[0]+"\n")
+    return s.getsockname()[0]
+
+
 def clientRequestHandler(message, masterDataFile, dataKeepersState, syncLock):
     if message[0] == "upload":
         # Checks whether there is a free port (j) for each ip (i)
@@ -10,6 +18,7 @@ def clientRequestHandler(message, masterDataFile, dataKeepersState, syncLock):
                     dataKeepersState[i][j] = False # Make Port Busy
                     syncLock.release()
                     return [i,j,message[1]]
+                syncLock.release()
     elif message[0] == "download":
         for i in masterDataFile:
             for j in masterDataFile[i]:
@@ -19,6 +28,7 @@ def clientRequestHandler(message, masterDataFile, dataKeepersState, syncLock):
                         dataKeepersState[i][j] = False # Make Port Busy
                         syncLock.release()
                         return [i,j,message[1]]
+                    syncLock.release()
     return None
 
 
@@ -37,7 +47,7 @@ def masterClientConnection(clientSocket,masterDataFile, dataKeepersState,syncLoc
     port = clientRequestHandler(message, masterDataFile, dataKeepersState,syncLock)
     clientSocket.send_pyobj(port)
 
-def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary):
+def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, masterDataFile, dataKeepersState):
     
     try:
         string = datakeeperSocket.recv_string()
@@ -52,12 +62,14 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary):
         port=processesIndex
         print("On Master index "+ str(masterIndex )+" File with Name: " + messagedata +" Has Successfully uploaded on Machine with ip: "+ ip+"\n" )
         addFile(ip,port,messagedata,filesDictionary)
+        dataKeepersState[ip][port] = True
+        masterDataFile[ip][port].append(messagedata)
+        
 
 
 def addFile (ip,port,fileName,filesDictionary):
     filesDictionary[fileName][1] += 1 
     filesDictionary[fileName][0][ip].append(port)  
-
 
 
 def initialzeClientMasterConnection(masterIndex,startingPortMasterClient):
@@ -69,20 +81,27 @@ def initialzeClientMasterConnection(masterIndex,startingPortMasterClient):
     return clientSocket
 
 
-
-def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper):
+def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState, syncLock):
     # Bind ports for datakeeper
     print("Master index = "+ str(masterIndex))
 
     context = zmq.Context()
+    masterReceiver = context.socket(zmq.PULL)
+    masterReceiver.bind(getIp() + "17777")
+    initializedDataKeepers = 0
+    datakeepersAdresses=[]
+    while initializedDataKeepers < numberOfNodes_Datakeeper * numberOfProcessesPerDataKeeper:
+        address = masterReceiver.recv_pyobj()
+        syncLock.acquire()
+        masterDataFile[address["ip"]][address["port"]] = []
+        dataKeepersState[address["ip"]][address["port"]] = True
+        syncLock.release()
+        datakeepersAdresses.append(str(address["ip"])+ str(address["port"]))
+        initializedDataKeepers += 1
     datakeeperSocket = context.socket(zmq.SUB)
     datakeeper_StartPort = 5556
-    portArr=[]
-    for i in range(numberOfNodes_Datakeeper):     
-        t=datakeeper_StartPort+i
-        portArr.append(t)
-    for j in portArr:
-        datakeeperSocket.connect ("tcp://127.0.0.1:%s" %  str(j))
+    for j in datakeepersAdresses:
+        datakeeperSocket.connect (datakeepersAdresses[j])
     topicfilter = "1"
     datakeeperSocket.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
     datakeeperSocket.RCVTIMEO = 1
@@ -156,11 +175,11 @@ def NotifyMachineDataTransfer(source_machine, machine_to_copy,nrSocket):
     nrSocket.send("%d %d" % (topic, msgToSrcMachine))
     
 
-def masterTracker(masterIndex,numberOfNodes_Datakeeper,startingPortMasterClient,masterDataFile,dataKeepersState,syncLock, filesDictionary,replicatesCount):
+def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, startingPortMasterClient,masterDataFile,dataKeepersState,syncLock, filesDictionary,replicatesCount):
     
 
     clientSocket = initialzeClientMasterConnection(masterIndex,startingPortMasterClient)
-    datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper)
+    datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState, syncLock)
     #nReplicates Master Datakeeper Connection
     nrSocket = nReplicatesMasterDatakeeper(masterIndex)
     while True:
@@ -168,7 +187,7 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper,startingPortMasterClient,
         masterClientConnection(clientSocket,masterDataFile, dataKeepersState, syncLock)
         
         # Connecting with data keepers
-        masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary)
+        masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, masterDataFile, dataKeepersState)
 
         makeNReplicates(filesDictionary,masterDataFile,syncLock,dataKeepersState,nrSocket,replicatesCount)
         
