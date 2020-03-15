@@ -47,7 +47,7 @@ def masterClientConnection(clientSocket,masterDataFile, dataKeepersState,syncLoc
     port = clientRequestHandler(message, masterDataFile, dataKeepersState,syncLock)
     clientSocket.send_pyobj(port)
 
-def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary):
+def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, masterDataFile, dataKeepersState):
     
     try:
         string = datakeeperSocket.recv_string()
@@ -62,6 +62,9 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary):
         port=processesIndex
         print("On Master index "+ str(masterIndex )+" File with Name: " + messagedata +" Has Successfully uploaded on Machine with ip: "+ ip+"\n" )
         addFile(ip,port,messagedata,filesDictionary)
+        dataKeepersState[ip][port] = True
+        masterDataFile[ip][port].append(messagedata)
+        
 
 
 def addFile (ip,port,fileName,filesDictionary):
@@ -184,7 +187,7 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerData
         masterClientConnection(clientSocket,masterDataFile, dataKeepersState, syncLock)
         
         # Connecting with data keepers
-        masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary)
+        masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, masterDataFile, dataKeepersState)
 
         makeNReplicates(filesDictionary,masterDataFile,syncLock,dataKeepersState,nrSocket,replicatesCount)
         
