@@ -1,10 +1,10 @@
 import zmq
+import socket
 
 
 def getIp():
     s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     s.connect(("8.8.8.8",80))
-    print("\nMy IP:"+s.getsockname()[0]+"\n")
     return s.getsockname()[0]
 
 
@@ -87,7 +87,7 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
 
     context = zmq.Context()
     masterReceiver = context.socket(zmq.PULL)
-    masterReceiver.bind(getIp() + "17777")
+    masterReceiver.bind("tcp://*:"+ "17777") # getIp()
     initializedDataKeepers = 0
     datakeepersAdresses=[]
     while initializedDataKeepers < numberOfNodes_Datakeeper * numberOfProcessesPerDataKeeper:

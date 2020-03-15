@@ -1,11 +1,10 @@
 import zmq
 import time
-
+import socket
 
 def getIp():
     s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     s.connect(("8.8.8.8",80))
-    print("\nMy IP:"+s.getsockname()[0]+"\n")
     return s.getsockname()[0]
 
 
@@ -14,13 +13,13 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
 
     context = zmq.Context()
     ipSender = context.socket(zmq.PUSH)
-    ipSender.connect("masterIP" + "17777")
+    ipSender.connect(masterIp + "17777")
     address = {"ip": getIp(), "port": startingPortDatakeeperClient + processesIndex}
     ipSender.send_pyobj(address)
     if processesIndex==0:
         port = 5556+NodeIndex
         socket = context.socket(zmq.PUB)
-        socket.bind(masterIp+"%s" % str(port))
+        socket.bind("tcp://127.0.0.1:"+"%s" % str(port))
         start = time.time()
     # Bind ports of datakeeper to be used with client
     context2 = zmq.Context()
@@ -35,7 +34,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
     for i in range(masterCount):
         port =10000+i
         masterSocket.connect ("tcp://localhost:%s" % port) #hena el mafrood no7ot el ip bta3 el master
-    masterSocket.setsockopt(zmq.SUBSCRIBE, topicfilter)
+    #masterSocket.setsockopt(zmq.SUBSCRIBE, topicfilter)
     print("----------------------------------------------------------------------------------")
     print("-- Datakeeper connected to all master processes successfully (n-replicates) !!! --")
     print("----------------------------------------------------------------------------------")
