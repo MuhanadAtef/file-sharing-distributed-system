@@ -1,8 +1,22 @@
 import zmq
 import time
+
+
+def getIp():
+    s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8",80))
+    print("\nMy IP:"+s.getsockname()[0]+"\n")
+    return s.getsockname()[0]
+
+
 def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount,masterIp):
     print("Node =" +str(NodeIndex)+" index = "+ str(processesIndex))
+
     context = zmq.Context()
+    ipSender = context.socket(zmq.PUSH)
+    ipSender.connect("masterIP" + "17777")
+    address = {"ip": getIp(), "port": startingPortDatakeeperClient + processesIndex}
+    ipSender.send_pyobj(address)
     if processesIndex==0:
         port = 5556+NodeIndex
         socket = context.socket(zmq.PUB)
@@ -81,7 +95,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
             #---------------------------------------------------
             topic=2
             messagedata = name
-            ip ="tcp://*:"
+            ip = getIp()
             port=str(int(startingPortDatakeeperClient+processesIndex))
             socket.send_string("%d %d %d %d" % (topic, messagedata ,ip,port))
             #-------------------------------------------------------------------

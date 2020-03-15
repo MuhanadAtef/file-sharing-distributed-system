@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # filesDictionary["filenameKey.mp4"][0]["tcp:127.0.0.1"] = [8000, 8001, 8002]
 
     for k in range(numberOfprocessesOfMaster):
-        t= multiprocessing.Process(target=Master.masterTracker,args=(k,numberOfNodes,startingPortMasterClient,masterDataFile, dataKeepersState, syncLock, filesDictionary ,replicatesCount)) 
+        t= multiprocessing.Process(target=Master.masterTracker,args=(k,numberOfNodes, numberOfprocessesOfNodes,startingPortMasterClient,masterDataFile, dataKeepersState, syncLock, filesDictionary ,replicatesCount)) 
         processes.append(t)
     for i in range(numberOfNodes):
         for k in range(numberOfprocessesOfNodes):
