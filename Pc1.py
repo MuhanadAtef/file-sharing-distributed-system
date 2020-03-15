@@ -11,6 +11,7 @@ if __name__ == '__main__':
     startingPortMasterClient=7000 #first port between client/master
     startingPortDatakeeperClient=8000 #first port between client/datakeeper
     masterIp="tcp://localhost:" #master ip
+    replicatesCount=3 # count of replicates
     processes=[]
     masterDataFile = multiprocessing.Manager().dict # masterDataFile = { ip1: { port1: [ file1, file2, ... ], port2: [...], ... }, ip2: {...} }
     dataKeepersState = multiprocessing.Manager().dict # dataKeepersState = { ip1: { port1: True, port2: False, ... }, ip2: { port1: True, ... }, ... }
@@ -20,11 +21,11 @@ if __name__ == '__main__':
     # filesDictionary["filenameKey.mp4"][0]["tcp:127.0.0.1"] = [8000, 8001, 8002]
 
     for k in range(numberOfprocessesOfMaster):
-        t= multiprocessing.Process(target=Master.masterTracker,args=(k,numberOfNodes,startingPortMasterClient,masterDataFile, dataKeepersState, syncLock, filesDictionary)) 
+        t= multiprocessing.Process(target=Master.masterTracker,args=(k,numberOfNodes,startingPortMasterClient,masterDataFile, dataKeepersState, syncLock, filesDictionary ,replicatesCount)) 
         processes.append(t)
     for i in range(numberOfNodes):
         for k in range(numberOfprocessesOfNodes):
-            t= multiprocessing.Process(target=DataKeeper.dataKeeper,args=(i,k,startingPortDatakeeperClient)) 
+            t= multiprocessing.Process(target=DataKeeper.dataKeeper,args=(i,k,startingPortDatakeeperClient,numberOfprocessesOfMaster,masterIp)) 
             processes.append(t)
 
     print("Enter # of client processes:")
