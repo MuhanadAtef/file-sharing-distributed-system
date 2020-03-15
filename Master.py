@@ -68,6 +68,10 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, mas
 
 
 def addFile (ip,port,fileName,filesDictionary):
+    if(len(filesDictionary[fileName]) == 0):
+        temp = nested_dict(1,list)
+        filesDictionary[fileName].append(temp)
+        filesDictionary[fileName].append(1)
     filesDictionary[fileName][1] += 1 
     filesDictionary[fileName][0][ip].append(port)  
 
@@ -187,6 +191,9 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerData
     
     masterDataFile = nested_dict(2, list)
     dataKeepersState = nested_dict(2, bool)
+    filesDictionary = nested_dict(1,list)
+
+
     clientSocket = initialzeClientMasterConnection(masterIndex,startingPortMasterClient)
     datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState, syncLock)
     #nReplicates Master Datakeeper Connection
