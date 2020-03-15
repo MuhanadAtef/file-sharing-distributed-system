@@ -13,7 +13,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
 
     context = zmq.Context()
     ipSender = context.socket(zmq.PUSH)
-    for i in masterCount:
+    for i in range(masterCount):
         ipSender.connect(masterIp + str(17777 + i))
     address = {"ip": getIp(), "port": startingPortDatakeeperClient + processesIndex, "head": True if processesIndex == 0 else False}
     ipSender.send_pyobj(address)
