@@ -1,6 +1,6 @@
 import zmq
 import socket
-
+from collections import defaultdict
 
 def getIp():
     s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -176,9 +176,17 @@ def NotifyMachineDataTransfer(source_machine, machine_to_copy,nrSocket):
     nrSocket.send("%d %d" % (topic, msgToSrcMachine))
     
 
+def nested_dict(n, type):
+    if n == 1:
+        return defaultdict(type)
+    else:
+        return defaultdict(lambda: nested_dict(n-1, type))
+
+
 def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, startingPortMasterClient,masterDataFile,dataKeepersState,syncLock, filesDictionary,replicatesCount):
     
-
+    masterDataFile = nested_dict(2, list)
+    dataKeepersState = nested_dict(2, bool)
     clientSocket = initialzeClientMasterConnection(masterIndex,startingPortMasterClient)
     datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState, syncLock)
     #nReplicates Master Datakeeper Connection
