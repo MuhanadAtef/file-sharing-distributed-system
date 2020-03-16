@@ -16,12 +16,14 @@ if __name__ == '__main__':
     dataKeepersState = manager.dict() # dataKeepersState = { ip1: { port1: True, port2: False, ... }, ip2: { port1: True, ... }, ... }
     syncLock = multiprocessing.RLock()
     iAmAliveDict = manager.dict()
+    headDataKeepers = manager.dict()
+    masterHeadFinished = multiprocessing.Value('i', 0)
     filesDictionary = manager.dict() # filesDictionary = { filename1: [ { ip1: [port1, port2, ...], ip2: [...], ... } , instanceCount], filename2: [...] }
     # filesDictionary["filenameKey.mp4"][1] = instanceCount
     # filesDictionary["filenameKey.mp4"][0]["tcp:127.0.0.1"] = [8000, 8001, 8002]
 
     for k in range(numberOfprocessesOfMaster):
-        t= multiprocessing.Process(target=Master.masterTracker,args=(k,numberOfNodes, numberOfprocessesOfNodes,startingPortMasterClient,masterDataFile, dataKeepersState, syncLock, filesDictionary ,replicatesCount,iAmAliveDict)) 
+        t= multiprocessing.Process(target=Master.masterTracker,args=(k,numberOfNodes, numberOfprocessesOfNodes,startingPortMasterClient,masterDataFile, dataKeepersState, syncLock, filesDictionary ,replicatesCount,iAmAliveDict, headDataKeepers, masterHeadFinished)) 
         processes.append(t)
 
     for j in processes:
