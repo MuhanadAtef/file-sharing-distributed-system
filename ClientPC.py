@@ -1,5 +1,5 @@
 import multiprocessing 
-import client
+import Client
     
 
 if __name__ == '__main__':
@@ -19,7 +19,7 @@ if __name__ == '__main__':
             print("command #%d:"%j)
             x=input()
             commands.append(x)
-        t=multiprocessing.Process(target=client.client,args=(masterIp,startingPortMasterClient,numberOfprocessesOfMaster,commands))
+        t=multiprocessing.Process(target=Client.client,args=(masterIp,startingPortMasterClient,numberOfprocessesOfMaster,commands))
         processes.append(t)
 
     for j in processes:
