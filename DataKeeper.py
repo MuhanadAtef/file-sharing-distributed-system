@@ -11,16 +11,17 @@ def getIp():
 def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount,masterIp):
     print("Node =" +str(NodeIndex)+" index = "+ str(processesIndex))
 
-    context = zmq.Context()
-    ipSender = context.socket(zmq.PUSH)
+    address = {"ip": "127.0.0.1","nodeIndex": NodeIndex  ,"head": True if processesIndex == 0 else False}
     for i in range(masterCount):
-        ipSender.connect(masterIp + str(17777 + i))
-    address = {"ip": getIp(), "port": startingPortDatakeeperClient + processesIndex, "head": True if processesIndex == 0 else False}
-    ipSender.send_pyobj(address)
+        context1 = zmq.Context()
+        ipSender = context1.socket(zmq.PUSH)
+        ipSender.connect("tcp://127.0.0.1:%s" % str(17777 + i))
+        ipSender.send_pyobj(address)
+    context = zmq.Context()
     if processesIndex==0:
         port = 5556+NodeIndex
         socket = context.socket(zmq.PUB)
-        socket.bind("tcp://127.0.0.1:"+"%s" % str(port))
+        socket.bind("tcp://127.0.0.1:%s" % str(port))
         start = time.time()
     # Bind ports of datakeeper to be used with client
     context2 = zmq.Context()

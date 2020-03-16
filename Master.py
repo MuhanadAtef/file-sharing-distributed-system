@@ -89,9 +89,9 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
     # Bind ports for datakeeper
     print("Master index = "+ str(masterIndex))
 
-    context = zmq.Context()
-    masterReceiver = context.socket(zmq.PULL)
-    masterReceiver.bind("tcp://*:"+ str(17777 + masterIndex)) # getIp()
+    context1 = zmq.Context()
+    masterReceiver = context1.socket(zmq.PULL)
+    masterReceiver.bind("tcp://127.0.0.1:%s" % str(17777 + masterIndex)) # getIp()
     initializedDataKeepers = 0
     datakeepersAdresses=[]
     while initializedDataKeepers < numberOfNodes_Datakeeper * numberOfProcessesPerDataKeeper:
@@ -101,11 +101,12 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
         dataKeepersState["tcp://"+address["ip"]+":"][address["port"]]= True
         syncLock.release()
         if address["head"]:
-            datakeepersAdresses.append("tcp://"+str(address["ip"])+":"+str(address["port"]))
+            datakeepersAdresses.append("tcp://"+str(address["ip"])+":"+str(5556+address["nodeIndex"]))
         initializedDataKeepers += 1
+    context = zmq.Context()
     datakeeperSocket = context.socket(zmq.SUB)
-    datakeeper_StartPort = 5556
     for j in datakeepersAdresses:
+
         datakeeperSocket.connect(j)
     topicfilter = "1"
     datakeeperSocket.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
