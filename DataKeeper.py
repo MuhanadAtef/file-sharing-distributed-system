@@ -52,7 +52,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
                 topic = 1 #topic ( I am Alive messages)
                 messagedata = 1 #alive
                 ip = getIp()
-                socket.send_string("%d %d %d %d %d" % (topic, messagedata , ip, NodeIndex,processesIndex))
+                socket.send_string("%d %d %s %d %d" % (topic, messagedata , ip, NodeIndex,processesIndex))
                 start = time.time()
             if time.time() - testingTimer >= 1+NodeIndex:
                 break

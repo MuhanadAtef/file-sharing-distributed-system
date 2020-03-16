@@ -52,10 +52,11 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, mas
     try:
         string = datakeeperSocket.recv_string()
         topic, messagedata, ip, NodeIndex , processesIndex  = string.split()
-        iAmAliveDict[ip] += 1
+        
     except zmq.error.Again:
         return
     if topic=="1" and messagedata=="1" :
+        iAmAliveDict[ip] += 1
         print("Master index "+ str(masterIndex )+" Node " +NodeIndex+" Process "+ processesIndex +" is Alive\n")
     #Master - datakeeper success message
     if topic=="2" :
@@ -208,13 +209,15 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerData
         masterClientConnection(clientSocket,masterDataFile, dataKeepersState, syncLock)
         # Connecting with data keepers
         masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, masterDataFile, dataKeepersState,iAmAliveDict)
-        if time.time() - startTime >= 1:
+        if time.time() - startTime >= 1.1 :
             timerCounter += 1
+            print(iAmAliveDict)
             for ip in iAmAliveDict:
                 if iAmAliveDict[ip] != timerCounter:
                     print("Datakeeper on ip: " + ip + " is dead, removing it from Master shared memory...")
                     del masterDataFile[ip]
                     del dataKeepersState[ip]
+                    del iAmAliveDict[ip]
                     for i in filesDictionary:
                         filesDictionary[i][1] -= 1
                         del filesDictionary[i][0][ip]
