@@ -36,9 +36,9 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
     masterSocket.RCVTIMEO = 1
     topicfilter = "1"
 
-    for i in range(masterCount):
+    for i in range(masterCount): # connect Datakeeper to all Masters sockets
         port =10000+i
-        masterSocket.connect ("tcp://localhost:%s" % port) #hena el mafrood no7ot el ip bta3 el master
+        masterSocket.connect ("tcp://localhost:%s" % port) #hena el mafrood no7ot el ip bta3 el master 
     #masterSocket.setsockopt(zmq.SUBSCRIBE, topicfilter)
     print("----------------------------------------------------------------------------------")
     print("-- Datakeeper connected to all master processes successfully (n-replicates) !!! --")

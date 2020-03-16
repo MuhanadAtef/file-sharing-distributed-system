@@ -130,7 +130,13 @@ def makeNReplicates(filesDictionary,masterDataFile,syncLock,dataKeepersState,nrS
         if instance_count < n:
             for i in range(n-instance_count): 
                 source_machine = getSourceMachine(file,filesDictionary,dataKeepersState,syncLock)
+                if source_machine == False:
+                    print ("All source Machines are busy failed to Make n Replicates")
+                    return
                 machine_to_copy_1 = selectMachineToCopyTo(masterDataFile,syncLock,dataKeepersState,file)
+                 if machine_to_copy_1 == False:
+                    print ("All Machines_To_Copy are busy failed to Make n Replicates")
+                    return
                 NotifyMachineDataTransfer(source_machine, machine_to_copy_1,nrSocket)
             print("----------------------------------------------------------------------------------")
             print("--                            N Replicates Done  !!!                            --")
@@ -138,49 +144,51 @@ def makeNReplicates(filesDictionary,masterDataFile,syncLock,dataKeepersState,nrS
         
 
 def getSourceMachine(file,filesDictionary,dataKeepersState,syncLock):
-    getFreeMachine=False
+    #getFreeMachine=False
     srcMachine=[]
     srcMachine.append(file)
-    while getFreeMachine == False:
-        for ip in filesDictionary[file][0]:
-            for port in filesDictionary[file][0][ip]:
-                syncLock.acquire()
-                if dataKeepersState[ip][port]:
-                    getFreeMachine=True
-                    dataKeepersState[ip][port] = False
-                    syncLock.release()
-                    srcMachine.append(ip)
-                    srcMachine.append(port)
-                    print("Source Machine Found \n")
-                    return srcMachine
+   # while getFreeMachine == False:
+    for ip in filesDictionary[file][0]:
+        for port in filesDictionary[file][0][ip]:
+            syncLock.acquire()
+            if dataKeepersState[ip][port]:
+                #getFreeMachine=True
+                dataKeepersState[ip][port] = False
                 syncLock.release()
+                srcMachine.append(ip)
+                srcMachine.append(port)
+                print("Source Machine Found \n")
+                return srcMachine
+            syncLock.release()
+    return False
 
 
 def selectMachineToCopyTo(masterDataFile,syncLock,dataKeepersState,fileName):
     notFound=True
-    selectMachine=False
-    while selectMachine==False:
-        for i in masterDataFile:
-                for j in masterDataFile[i]:
-                    notFound=True
-                    for k in masterDataFile[i][j]:
-                        if k==fileName:
-                            notFound=False
-                            break
-                    syncLock.acquire()
-                    if notFound==True and dataKeepersState[i][j]:
-                        dataKeepersState[i][j] = False # Make Port Busy
-                        syncLock.release()
-                        selectMachine=True
-                        print("Machine to Copy Found \n")
-                        return[i,j]
+    #selectMachine=False
+    #while selectMachine==False:
+    for i in masterDataFile:
+            for j in masterDataFile[i]:
+                notFound=True
+                for k in masterDataFile[i][j]:
+                    if k==fileName:
+                        notFound=False
+                        break
+                syncLock.acquire()
+                if notFound==True and dataKeepersState[i][j]:
+                    dataKeepersState[i][j] = False # Make Port Busy
                     syncLock.release()
+                    #selectMachine=True
+                    print("Machine to Copy Found \n")
+                    return[i,j]
+                syncLock.release()
+    return False
 
 
 def NotifyMachineDataTransfer(source_machine, machine_to_copy,nrSocket):
     msgToSrcMachine=["tcp://"+str(machine_to_copy[0])+":"+machine_to_copy[1],"Alberto Mardegan - Selfie del futuro.mp4","source_machine"]
     topic = "1"
-    nrSocket.send("%d %d" % (topic, msgToSrcMachine))
+    nrSocket.send("%d %d" % (topic, msgToSrcMachine)) #send to source machine ip and port of "machine_to_copy" and filename  and variable to know it is source_machine
     
 
 def nested_dict(n, type):
