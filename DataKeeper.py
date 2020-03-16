@@ -13,11 +13,11 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
     print("Node =" +str(NodeIndex)+" index = "+ str(processesIndex))
 
     address = {"ip": "172.30.38.151","nodeIndex": NodeIndex  ,"head": True if processesIndex == 0 else False}
-    for i in range(masterCount):
-        context1 = zmq.Context()
-        ipSender = context1.socket(zmq.PUSH)
-        ipSender.connect("tcp://172.30.249.130:%s" % str(17777 + i))
-        ipSender.send_pyobj(address)
+    context1 = zmq.Context()
+    ipSender = context1.socket(zmq.PUSH)
+    ipSender.connect("tcp://172.30.249.130:%s" % str(17777))
+    ipSender.send_pyobj(address)
+    print("Ana datakeeper b3at le ip: tcp://172.30.249.130:%s" % str(17777))
     context = zmq.Context()
     if processesIndex==0:
         port = 5556+NodeIndex

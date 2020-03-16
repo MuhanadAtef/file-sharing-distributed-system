@@ -35,6 +35,7 @@ def client(masterIp,startingPortMasterClient,numberOfprocessesOfMaster,commands)
             while (messege == None):
                 masterSocket.send_pyobj([command,path])
                 messege = masterSocket.recv_pyobj()
+            print(messege)
             datakeeperSocket.connect(str(messege[0])+str(messege[1]))
             print (command+"ing ...")
             if command=="upload":
