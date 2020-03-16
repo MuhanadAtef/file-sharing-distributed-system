@@ -94,13 +94,14 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
             f.close()
             print("File uploaded successfully")
             # send to master that it is successfully uploaded
-            #---------------------------------------------------
-            topic="2"
-            messagedata = name
+            #--------------------------------------------------------------------------------------
+            topic=1
+            messagedata =2
+            fileName = name
             ip = getIp()
             port=str(int(startingPortDatakeeperClient+processesIndex))
-            socket.send_string("%s %s %s %s" % (topic, messagedata ,ip,port))
-            #-------------------------------------------------------------------
+            socket.send_string("%d %d %s %s %s" % (topic, messagedata,ip,port,fileName))
+            #--------------------------------------------------------------------------------------------
             clientSocket.send_string("")
 
         elif len(data)==1:  # Client download
