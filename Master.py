@@ -155,10 +155,10 @@ def getSourceMachine(file,filesDictionary,dataKeepersState,syncLock):
     #getFreeMachine=False
     srcMachine=[]
     srcMachine.append(file)
+    syncLock.acquire()
    # while getFreeMachine == False:
     for ip in filesDictionary[file][0]:
         for port in filesDictionary[file][0][ip]:
-            syncLock.acquire()
             if dataKeepersState[ip][port]:
                 #getFreeMachine=True
                 dataKeepersState[ip][port] = False
@@ -167,7 +167,7 @@ def getSourceMachine(file,filesDictionary,dataKeepersState,syncLock):
                 srcMachine.append(port)
                 print("Source Machine Found \n")
                 return srcMachine
-            syncLock.release()
+    syncLock.release()
     return False
 
 
@@ -175,6 +175,7 @@ def selectMachineToCopyTo(masterDataFile,syncLock,dataKeepersState,fileName):
     notFound=True
     #selectMachine=False
     #while selectMachine==False:
+    syncLock.acquire()
     for i in masterDataFile:
             for j in masterDataFile[i]:
                 notFound=True
@@ -182,14 +183,13 @@ def selectMachineToCopyTo(masterDataFile,syncLock,dataKeepersState,fileName):
                     if k==fileName:
                         notFound=False
                         break
-                syncLock.acquire()
                 if notFound==True and dataKeepersState[i][j]:
                     dataKeepersState[i][j] = False # Make Port Busy
                     syncLock.release()
                     #selectMachine=True
                     print("Machine to Copy Found \n")
                     return[i,j]
-                syncLock.release()
+    syncLock.release()
     return False
 
 
