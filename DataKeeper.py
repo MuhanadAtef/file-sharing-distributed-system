@@ -6,29 +6,30 @@ def getIp():
     s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     s.connect(("8.8.8.8",80))
     #return s.getsockname()[0]
-    return "127.0.0.1"
+    return "172.30.38.151"
+
 
 def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount,masterIp):
     print("Node =" +str(NodeIndex)+" index = "+ str(processesIndex))
 
-    address = {"ip": "127.0.0.1","nodeIndex": NodeIndex  ,"head": True if processesIndex == 0 else False}
+    address = {"ip": "172.30.38.151","nodeIndex": NodeIndex  ,"head": True if processesIndex == 0 else False}
     for i in range(masterCount):
         context1 = zmq.Context()
         ipSender = context1.socket(zmq.PUSH)
-        ipSender.connect("tcp://127.0.0.1:%s" % str(17777 + i))
+        ipSender.connect("tcp://172.30.249.130:%s" % str(17777 + i))
         ipSender.send_pyobj(address)
     context = zmq.Context()
     if processesIndex==0:
         port = 5556+NodeIndex
         socket = context.socket(zmq.PUB)
-        socket.bind("tcp://127.0.0.1:%s" % str(port))
+        socket.bind("tcp://172.30.38.151:%s" % str(port))
         start = time.time()
         #testingTimer = time.time()
 
     # Bind ports of datakeeper to be used with client
     context2 = zmq.Context()
     clientSocket=context2.socket(zmq.PAIR)
-    clientSocket.bind("tcp://*:"+str(int(startingPortDatakeeperClient+processesIndex)))
+    clientSocket.bind("tcp://172.30.38.151:"+str(int(startingPortDatakeeperClient+processesIndex)))
     clientSocket.RCVTIMEO = 1
     # connect ports of datakeeper to be used with Master
     context3 = zmq.Context()
@@ -38,7 +39,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
 
     for i in range(masterCount): # connect Datakeeper to all Masters sockets
         port =10000+i
-        masterSocket.connect ("tcp://localhost:%s" % port) #hena el mafrood no7ot el ip bta3 el master 
+        masterSocket.connect ("tcp://172.30.249.130:%s" % port) #hena el mafrood no7ot el ip bta3 el master 
     #masterSocket.setsockopt(zmq.SUBSCRIBE, topicfilter)
     print("----------------------------------------------------------------------------------")
     print("-- Datakeeper connected to all master processes successfully (n-replicates) !!! --")
@@ -97,10 +98,11 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
             #--------------------------------------------------------------------------------------
             topic=1
             messagedata =2
-            fileName = name
+            fileName = name[-1]
             ip = getIp()
+            print(fileName)
             port=str(int(startingPortDatakeeperClient+processesIndex))
-            socket.send_string("%d %d %s %s %s" % (topic, messagedata,ip,port,fileName))
+            socket.send_string("%d %d %s %s %s" % ( topic, messagedata,ip,port,fileName) )
             #--------------------------------------------------------------------------------------------
             clientSocket.send_string("")
 

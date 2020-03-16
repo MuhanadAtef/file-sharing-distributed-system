@@ -31,10 +31,12 @@ def client(masterIp,startingPortMasterClient,numberOfprocessesOfMaster,commands)
                     path+=" "
 
         if command=="upload" or command=="download":
-            masterSocket.send_pyobj([command,path])
-            messege = masterSocket.recv_pyobj()
+            messege = None
+            while (messege == None):
+                masterSocket.send_pyobj([command,path])
+                messege = masterSocket.recv_pyobj()
             datakeeperSocket.connect(str(messege[0])+str(messege[1]))
-            print (messege)
+            print (command+"ing ...")
             if command=="upload":
                 f= open(path,'rb')
                 video=f.read()
@@ -42,6 +44,7 @@ def client(masterIp,startingPortMasterClient,numberOfprocessesOfMaster,commands)
                 f.close()
                 datakeeperSocket.recv()
                 datakeeperSocket.close()
+                print("File uploaded successfully")
             else:
                 datakeeperSocket.send_pyobj([path])
                 video=datakeeperSocket.recv_pyobj()
