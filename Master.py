@@ -64,6 +64,14 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, mas
         dataKeepersState[ip][port] = True
         for i in range(numberOfProcessesPerDataKeeper):
             masterDataFile[ip][str(8000+i)].append(messagedata)
+    
+    if topic=="1" and messagedata=="3" :
+        port = NodeIndex
+        synclock.acquire()
+        dataKeepersState[ip][port] = True
+        synclock.release()
+        
+        
         
 
 
@@ -194,7 +202,7 @@ def selectMachineToCopyTo(masterDataFile,syncLock,dataKeepersState,fileName):
 
 
 def NotifyMachineDataTransfer(source_machine, machine_to_copy,nrSocket):
-    msgToSrcMachine=["tcp://"+str(machine_to_copy[0])+":"+machine_to_copy[1],"Alberto Mardegan - Selfie del futuro.mp4","source_machine"]
+    msgToSrcMachine=["tcp://"+str(machine_to_copy[0])+":"+machine_to_copy[1],"Alberto Mardegan - Selfie del futuro.mp4","source_machine",str(source_machine[1]),str(source_machine[2])]
     topic = "1"
     nrSocket.send("%d %d" % (topic, msgToSrcMachine)) #send to source machine ip and port of "machine_to_copy" and filename  and variable to know it is source_machine
     

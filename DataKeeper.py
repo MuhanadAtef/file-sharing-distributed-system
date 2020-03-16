@@ -75,7 +75,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
         except zmq.error.Again:
             pass
 
-        if topic=="1" and len(messagedata)==3: #message from Master to sourceMachine dataKeeper here source machine datakeeper send the video to another data keeper so at machine_to_copy it will get in "client upload" as if a client send this file to it
+        if topic=="1" and len(messagedata)==5: #message from Master to sourceMachine dataKeeper here source machine datakeeper send the video to another data keeper so at machine_to_copy it will get in "client upload" as if a client send this file to it
             if messagedata[2]=="source_machine":
                 contextt = zmq.Context()
                 datakeeperSocket = contextt.socket(zmq.PAIR) # Datakeeper-Datakeeper connection
@@ -86,6 +86,15 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
                 f.close()
                 datakeeperSocket.recv()
                 datakeeperSocket.close()
+                "---------------------------------To handle Source machine busy---------------------------------------"
+                topic=1
+                messagedata=3
+                ip=messagedata[3]
+                port=messagedata[4]
+                fileName=""
+                socket.send_string("%d %d %s %s %s" % ( topic, messagedata,ip,port,fileName) )
+                "-------------------------------------------------------------------------------------------------------"
+                
 
 
         if len(data)==2:    # Client upload
