@@ -97,8 +97,8 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
     while initializedDataKeepers < numberOfNodes_Datakeeper * numberOfProcessesPerDataKeeper:
         address = masterReceiver.recv_pyobj()
         syncLock.acquire()
-        masterDataFile["tcp://"+address["ip"]+":"][address["port"]] = []
-        dataKeepersState["tcp://"+address["ip"]+":"][address["port"]]= True
+        masterDataFile["tcp://"+address["ip"]+":"][str(8000+address["nodeIndex"])] = []
+        dataKeepersState["tcp://"+address["ip"]+":"][str(8000+address["nodeIndex"])]= True
         syncLock.release()
         if address["head"]:
             datakeepersAdresses.append("tcp://"+str(address["ip"])+":"+str(5556+address["nodeIndex"]))

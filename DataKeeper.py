@@ -31,6 +31,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
     # connect ports of datakeeper to be used with Master
     context3 = zmq.Context()
     masterSocket = context3.socket(zmq.SUB)
+    masterSocket.RCVTIMEO = 1
     topicfilter = "1"
 
     for i in range(masterCount):
@@ -56,23 +57,18 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
         try:
             data=clientSocket.recv_pyobj()
         except zmq.error.Again:
-            continue
-
-        #connection with master
-        data2=[]
-        try:
-            data2=clientSocket.recv_pyobj()        
-        except zmq.error.Again:
-            continue
-
+            pass
+        
         # Nreplicates connection with master
         data3=[]
+        topic="0"
+        messagedata=[]
         try:
             data3 =masterSocket.recv() 
-            topic, messagedata = data3.split()       
+            topic, messagedata = data3.split()   
         except zmq.error.Again:
-            continue
-        
+            pass
+
         if topic=="1" and len(messagedata)==3: #message from Master to sourceMachine dataKeeper here source machine datakeeper send the video to another data keeper so at machine_to_copy it will get in "client upload" as if a client send this file to it
             if messagedata[2]=="source_machine":
                 contextt = zmq.Context()
@@ -94,11 +90,11 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
             print("File uploaded successfully")
             # send to master that it is successfully uploaded
             #---------------------------------------------------
-            topic=2
+            topic="2"
             messagedata = name
             ip = getIp()
             port=str(int(startingPortDatakeeperClient+processesIndex))
-            socket.send_string("%d %d %d %d" % (topic, messagedata ,ip,port))
+            socket.send_string("%s %s %s %s" % (topic, messagedata ,ip,port))
             #-------------------------------------------------------------------
             clientSocket.send_string("")
 
@@ -107,4 +103,5 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
             video=f.read()
             clientSocket.send_pyobj([video,data[0]])
             f.close()
+
 
