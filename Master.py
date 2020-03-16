@@ -51,18 +51,17 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, mas
     
     try:
         string = datakeeperSocket.recv_string()
-        topic, messagedata, ip, NodeIndex , processesIndex  = string.split()
-        
+        topic, messagedata ,ip ,NodeIndex , processesIndex  = string.split()
     except zmq.error.Again:
         return
     if topic=="1" and messagedata=="1" :
         iAmAliveDict[ip] += 1
         print("Master index "+ str(masterIndex )+" Node " +NodeIndex+" Process "+ processesIndex +" is Alive\n")
     #Master - datakeeper success message
-    if topic=="2" :
-        ip=NodeIndex
-        port=processesIndex
-        print("On Master index "+ str(masterIndex )+" File with Name: " + messagedata +" Has Successfully uploaded on Machine with ip: "+ ip+"\n" )
+    if topic=="1" and messagedata=="2" :
+        port=NodeIndex
+        fileName=processesIndex
+        print("On Master index "+ str(masterIndex )+" File with Name: " + fileName +" Has Successfully uploaded on Machine with ip: "+ ip+"\n" )
         addFile(ip,port,messagedata,filesDictionary)
         dataKeepersState[ip][port] = True
         masterDataFile[ip][port].append(messagedata)
