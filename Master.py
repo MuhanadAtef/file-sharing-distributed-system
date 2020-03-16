@@ -1,6 +1,7 @@
 import zmq
 import socket
 from collections import defaultdict
+import time
 
 def getIp():
     s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -46,11 +47,12 @@ def masterClientConnection(clientSocket,masterDataFile, dataKeepersState,syncLoc
     port = clientRequestHandler(message, masterDataFile, dataKeepersState,syncLock)
     clientSocket.send_pyobj(port)
 
-def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, masterDataFile, dataKeepersState):
+def masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, masterDataFile, dataKeepersState, iAmAliveDict):
     
     try:
         string = datakeeperSocket.recv_string()
-        topic, messagedata , NodeIndex , processesIndex  = string.split()
+        topic, messagedata, ip, NodeIndex , processesIndex  = string.split()
+        iAmAliveDict[ip] += 1
     except zmq.error.Again:
         return
     if topic=="1" and messagedata=="1" :
@@ -85,7 +87,7 @@ def initialzeClientMasterConnection(masterIndex,startingPortMasterClient):
     return clientSocket
 
 
-def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState, syncLock):
+def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState, syncLock, iAmAliveDict):
     # Bind ports for datakeeper
     print("Master index = "+ str(masterIndex))
 
@@ -101,16 +103,16 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
         dataKeepersState["tcp://"+address["ip"]+":"][str(8000+address["nodeIndex"])]= True
         syncLock.release()
         if address["head"]:
+            iAmAliveDict[address["ip"]] = 0
             datakeepersAdresses.append("tcp://"+str(address["ip"])+":"+str(5556+address["nodeIndex"]))
         initializedDataKeepers += 1
     context = zmq.Context()
     datakeeperSocket = context.socket(zmq.SUB)
     for j in datakeepersAdresses:
-
         datakeeperSocket.connect(j)
     topicfilter = "1"
     datakeeperSocket.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
-    datakeeperSocket.RCVTIMEO = 1
+    datakeeperSocket.RCVTIMEO = 1000
     return datakeeperSocket
 
 
@@ -193,15 +195,28 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerData
     masterDataFile = nested_dict(2, list)
     dataKeepersState = nested_dict(2, bool)
     filesDictionary = nested_dict(1,list)
-
+    iAmAliveDict = {}
+    timerCounter = 0
 
     clientSocket = initialzeClientMasterConnection(masterIndex,startingPortMasterClient)
-    datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState, syncLock)
+    datakeeperSocket = initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, masterDataFile, dataKeepersState, syncLock, iAmAliveDict)
     #nReplicates Master Datakeeper Connection
     nrSocket = nReplicatesMasterDatakeeper(masterIndex)
+    startTime = time.time()
     while True:
         #Connecting with client
         masterClientConnection(clientSocket,masterDataFile, dataKeepersState, syncLock)
         # Connecting with data keepers
-        masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, masterDataFile, dataKeepersState)
+        masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, masterDataFile, dataKeepersState,iAmAliveDict)
+        if time.time() - startTime >= 1:
+            timerCounter += 1
+            for ip in iAmAliveDict:
+                if iAmAliveDict[ip] != timerCounter:
+                    print("Datakeeper on ip: " + ip + " is dead, removing it from Master shared memory...")
+                    del masterDataFile[ip]
+                    del dataKeepersState[ip]
+                    for i in filesDictionary:
+                        filesDictionary[i][1] -= 1
+                        del filesDictionary[i][0][ip]
+            startTime = time.time()
         makeNReplicates(filesDictionary,masterDataFile,syncLock,dataKeepersState,nrSocket,replicatesCount)        
