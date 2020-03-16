@@ -10,7 +10,7 @@ if __name__ == '__main__':
     numberOfNodes=1 #number of nodes of data keeper
     startingPortMasterClient=7000 #first port between client/master
     startingPortDatakeeperClient=8000 #first port between client/datakeeper
-    masterIp="tcp://localhost:" #master ip
+    masterIp="tcp://127.0.0.1:" #master ip
     replicatesCount=3 # count of replicates
     processes=[]
     manager = multiprocessing.Manager()

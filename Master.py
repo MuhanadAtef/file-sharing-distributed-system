@@ -34,12 +34,11 @@ def clientRequestHandler(message, masterDataFile, dataKeepersState, syncLock):
 
 def masterClientConnection(clientSocket,masterDataFile, dataKeepersState,syncLock):
     # Sending/Receiving data from client
-    clientSocket.RCVTIMEO = 1
     # Wait for next request from client
-    message = None
+    message = []
     try:
-        messege = clientSocket.recv_pyobj()
-        print(messege)
+        message = clientSocket.recv_pyobj()
+        print(message)
     except zmq.error.Again:
         return
     # TODO: Function made by friedPotato7 use messege[upload/download,filename.mp4] and return arr[ip,port#,path of file] replaced by 8000
@@ -81,7 +80,8 @@ def initialzeClientMasterConnection(masterIndex,startingPortMasterClient):
     clientPort=startingPortMasterClient+masterIndex
     context = zmq.Context()
     clientSocket = context.socket(zmq.REP)
-    clientSocket.bind("tcp://*:%s" % clientPort)
+    clientSocket.bind("tcp://127.0.0.1:%s" % clientPort)
+    clientSocket.RCVTIMEO = 1
     return clientSocket
 
 
@@ -97,8 +97,8 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
     while initializedDataKeepers < numberOfNodes_Datakeeper * numberOfProcessesPerDataKeeper:
         address = masterReceiver.recv_pyobj()
         syncLock.acquire()
-        masterDataFile[address["ip"]][address["port"]] = []
-        dataKeepersState[address["ip"]][address["port"]] = True
+        masterDataFile["tcp://"+address["ip"]+":"][address["port"]] = []
+        dataKeepersState["tcp://"+address["ip"]+":"][address["port"]]= True
         syncLock.release()
         if address["head"]:
             datakeepersAdresses.append("tcp://"+str(address["ip"])+":"+str(address["port"]))
@@ -129,9 +129,9 @@ def makeNReplicates(filesDictionary,masterDataFile,syncLock,dataKeepersState,nrS
                 source_machine = getSourceMachine(file,filesDictionary,dataKeepersState,syncLock)
                 machine_to_copy_1 = selectMachineToCopyTo(masterDataFile,syncLock,dataKeepersState,file)
                 NotifyMachineDataTransfer(source_machine, machine_to_copy_1,nrSocket)
-    print("----------------------------------------------------------------------------------")
-    print("--                            N Replicates Done  !!!                            --")
-    print("----------------------------------------------------------------------------------")
+            print("----------------------------------------------------------------------------------")
+            print("--                            N Replicates Done  !!!                            --")
+            print("----------------------------------------------------------------------------------")
         
 
 def getSourceMachine(file,filesDictionary,dataKeepersState,syncLock):
@@ -201,10 +201,6 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerData
     while True:
         #Connecting with client
         masterClientConnection(clientSocket,masterDataFile, dataKeepersState, syncLock)
-        
         # Connecting with data keepers
         masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, masterDataFile, dataKeepersState)
-
-        makeNReplicates(filesDictionary,masterDataFile,syncLock,dataKeepersState,nrSocket,replicatesCount)
-        
-        
+        makeNReplicates(filesDictionary,masterDataFile,syncLock,dataKeepersState,nrSocket,replicatesCount)        
