@@ -113,7 +113,7 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
         datakeeperSocket.connect(j)
     topicfilter = "1"
     datakeeperSocket.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
-    datakeeperSocket.RCVTIMEO = 1000
+    datakeeperSocket.RCVTIMEO = 1
     return datakeeperSocket
 
 
@@ -191,12 +191,12 @@ def nested_dict(n, type):
         return defaultdict(lambda: nested_dict(n-1, type))
 
 
-def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, startingPortMasterClient,masterDataFile,dataKeepersState,syncLock, filesDictionary,replicatesCount):
+def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, startingPortMasterClient,masterDataFile,dataKeepersState,syncLock, filesDictionary,replicatesCount,iAmAliveDict):
     
     masterDataFile = nested_dict(2, list)
     dataKeepersState = nested_dict(2, bool)
     filesDictionary = nested_dict(1,list)
-    iAmAliveDict = {}
+    iAmAliveDict = nested_dict(1,int)
     timerCounter = 0
 
     clientSocket = initialzeClientMasterConnection(masterIndex,startingPortMasterClient)
@@ -209,17 +209,27 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerData
         masterClientConnection(clientSocket,masterDataFile, dataKeepersState, syncLock)
         # Connecting with data keepers
         masterDatakeeperConnection(masterIndex,datakeeperSocket,filesDictionary, masterDataFile, dataKeepersState,iAmAliveDict)
-        if time.time() - startTime >= 1.1 :
+        if time.time() - startTime > 1:
             timerCounter += 1
             print(iAmAliveDict)
+            syncLock.acquire()
+            willDel=[]
             for ip in iAmAliveDict:
-                if iAmAliveDict[ip] != timerCounter:
-                    print("Datakeeper on ip: " + ip + " is dead, removing it from Master shared memory...")
-                    del masterDataFile[ip]
-                    del dataKeepersState[ip]
-                    del iAmAliveDict[ip]
-                    for i in filesDictionary:
-                        filesDictionary[i][1] -= 1
-                        del filesDictionary[i][0][ip]
+                if iAmAliveDict[ip]+1 < timerCounter:
+                    if dataKeepersState["tcp://"+ip+":"][str(8000)]==True :                         
+                        print("master index " +str(masterIndex))
+                        print("Datakeeper on ip: " + ip + " is dead, removing it from Master shared memory...")
+                        del masterDataFile["tcp://"+ip+":"]
+                        del dataKeepersState["tcp://"+ip+":"]
+                        willDel.append(ip)
+                        for i in filesDictionary:
+                            filesDictionary[i][1] -= 1
+                            del filesDictionary[i][0][ip]
+                    else:
+                        iAmAliveDict[ip] = timerCounter
+                        
+            for i in willDel:
+                del iAmAliveDict[i]
+            syncLock.release()
             startTime = time.time()
         makeNReplicates(filesDictionary,masterDataFile,syncLock,dataKeepersState,nrSocket,replicatesCount)        

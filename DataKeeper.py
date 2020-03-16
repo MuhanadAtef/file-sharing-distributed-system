@@ -23,7 +23,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
         socket = context.socket(zmq.PUB)
         socket.bind("tcp://127.0.0.1:%s" % str(port))
         start = time.time()
-        testingTimer = time.time()
+        #testingTimer = time.time()
 
     # Bind ports of datakeeper to be used with client
     context2 = zmq.Context()
@@ -54,8 +54,8 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
                 ip = getIp()
                 socket.send_string("%d %d %s %d %d" % (topic, messagedata , ip, NodeIndex,processesIndex))
                 start = time.time()
-            if time.time() - testingTimer >= 1+NodeIndex:
-                break
+            #if time.time() - testingTimer >= 3+NodeIndex:
+                #break
 
         # Connection with client
         data=[]
