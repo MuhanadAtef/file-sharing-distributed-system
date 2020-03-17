@@ -288,7 +288,7 @@ def NotifyMachineDataTransfer(source_machine, machine_to_copy,nrSocket):
     msgToSrcMachine=[str(machine_to_copy[0])+machine_to_copy[1],source_machine[0],"source_machine",str(source_machine[1]),str(source_machine[2])]
     print("msgToSrcMachine: ", msgToSrcMachine)
     topic = 1
-    nrSocket.send_string("%d %s" % (topic, msgToSrcMachine)) #send to source machine ip and port of "machine_to_copy" and filename  and variable to know it is source_machine
+    nrSocket.send_string("%d %s %s %s %s %s" % (topic, str(machine_to_copy[0])+machine_to_copy[1],source_machine[0],"source_machine",str(source_machine[1]),str(source_machine[2]))) #send to source machine ip and port of "machine_to_copy" and filename  and variable to know it is source_machine
     print("msgToSrcMachine is sent")
 
 
