@@ -80,6 +80,7 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
         data = successMsgDataKeeperSocket.recv_string()
         print("el server 3amal recv lel data deh", data)
         successMsgDataKeeperSocket.send_string("done")
+        print("el data eli msh 3aref a3mlha split ahe:", data)
         messagedata ,ip ,port , fileName  = data.split()
     except zmq.error.Again:
         messagedata = "-1"
@@ -95,13 +96,16 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
         for i in range(numberOfProcessesPerDataKeeper):
             masterDataFile["tcp://"+ip+":"][str(8000+i)].append(fileName)
         syncLock.release()
+        print("dataKeepersState:",dataKeepersState)
         
     
     if messagedata=="3" :
         syncLock.acquire()
-        dataKeepersState["tcp://"+ip+":"][port] = True
+        print(ip+port)
+        dataKeepersState[ip][port] = True
         doNreplicates=False
         syncLock.release()
+        print("dataKeepersState:",dataKeepersState)
     
     try:
         string = datakeeperSocket.recv_string()
@@ -210,9 +214,9 @@ def makeNReplicates(syncLock,nrSocket,n, masterIndex):
         return
     syncLock.release()
         
+    syncLock.acquire()
     for file in filesDictionary:
         instance_count = filesDictionary[file][1] #get el instance count bta3 file 
-        print(filesDictionary[file])
         if instance_count < n:
             print("ana master rakam " + str(masterIndex) + " gowa el makeNReplicates")
             for i in range(n-instance_count):
@@ -221,21 +225,23 @@ def makeNReplicates(syncLock,nrSocket,n, masterIndex):
                 if source_machine == False:
                     doNreplicates=False
                     print ("All source Machines are busy failed to Make n Replicates")
+                    syncLock.release()
                     return
                 machine_to_copy_1 = selectMachineToCopyTo(syncLock,file)
                 if machine_to_copy_1 == False:
                     doNreplicates=False
                     print ("All Machines_To_Copy are busy failed to Make n Replicates")
+                    syncLock.release()
                     return
                 NotifyMachineDataTransfer(source_machine, machine_to_copy_1,nrSocket)
             print("----------------------------------------------------------------------------------")
             print("--                            N Replicates Loading  !!!                         --")
             print("----------------------------------------------------------------------------------")
         else:
-            syncLock.acquire()
             doNreplicates = False
             syncLock.release()
             return
+    syncLock.release()
 
 
 def getSourceMachine(file,syncLock):
