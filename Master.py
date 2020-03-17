@@ -18,6 +18,7 @@ filesDictionary = nested_dict(1,list) # filesDictionary = { filename1: [ { ip1: 
 # filesDictionary["filenameKey.mp4"][0]["tcp:127.0.0.1"] = [8000, 8001, 8002]
 iAmAliveDict = nested_dict(1,int)
 headDataKeepers = {}
+doNreplicates=False
 
 
 def getIp():
@@ -98,6 +99,7 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
     if messagedata=="3" :
         syncLock.acquire()
         dataKeepersState["tcp://"+ip+":"][port] = True
+        doNreplicates=False
         syncLock.release()
     
     try:
@@ -195,6 +197,7 @@ def successMsgSocket(masterIndex):
     return socket
 
 def makeNReplicates(syncLock,nrSocket,n):
+    global doNreplicates
     global filesDictionary
     global masterDataFile
     global dataKeepersState
@@ -206,15 +209,17 @@ def makeNReplicates(syncLock,nrSocket,n):
                 # print("ana gowa el for loop bta3et mahmoud")
                 source_machine = getSourceMachine(file,syncLock)
                 if source_machine == False:
+                    doNreplicates=False
                     #print ("All source Machines are busy failed to Make n Replicates")
                     return
                 machine_to_copy_1 = selectMachineToCopyTo(syncLock,file)
                 if machine_to_copy_1 == False:
+                    doNreplicates=False
                     #print ("All Machines_To_Copy are busy failed to Make n Replicates")
                     return
                 NotifyMachineDataTransfer(source_machine, machine_to_copy_1,nrSocket)
             print("----------------------------------------------------------------------------------")
-            print("--                            N Replicates Done  !!!                            --")
+            print("--                            N Replicates Loading  !!!                         --")
             print("----------------------------------------------------------------------------------")
 
 
@@ -271,7 +276,7 @@ def NotifyMachineDataTransfer(source_machine, machine_to_copy,nrSocket):
 
 
 def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, startingPortMasterClient,syncLock,replicatesCount):
-    
+    global doNreplicates
     global masterHeadFinished
     global masterDataFile
     global dataKeepersState
@@ -315,7 +320,12 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerData
                 del iAmAliveDict[i]
             syncLock.release()
             startTime = time.time()
-        makeNReplicates(syncLock,nrSocket,replicatesCount) 
+            
+         
+        if doNreplicates==False:
+            doNreplicates=True
+            makeNReplicates(syncLock,nrSocket,replicatesCount) 
+            
 
 def main():
     numberOfthreadssOfMaster=5 #number of processes  multi-process(MasterTracker)
