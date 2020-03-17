@@ -74,6 +74,7 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
     global dataKeepersState
     global filesDictionary
     global iAmAliveDict
+    global doNreplicates
     
     try:
         data = successMsgDataKeeperSocket.recv_string()
