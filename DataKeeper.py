@@ -88,7 +88,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
             pass
 
         if topic=="1" and len(messagedata)==5: #message from Master to sourceMachine dataKeeper here source machine datakeeper send the video to another data keeper so at machine_to_copy it will get in "client upload" as if a client send this file to it
-            if messagedata[2]=="source_machine":
+            if messagedata[2]=="source_machine" and messagedata[3]==getIp():
                 contextt = zmq.Context()
                 datakeeperSocket = contextt.socket(zmq.PAIR) # Datakeeper-Datakeeper connection
                 datakeeperSocket.connect(messagedata[0])
@@ -99,7 +99,6 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
                 datakeeperSocket.recv()
                 datakeeperSocket.close()
                 "---------------------------------To handle Source machine busy---------------------------------------"
-                topic=1
                 messagedata=3
                 ip=messagedata[3]
                 port=messagedata[4]
@@ -123,7 +122,8 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
             ip = getIp()
             print(fileName)
             port=str(int(startingPortDatakeeperClient+processesIndex))
-            dksocket.send_string("%d %s %s %s" % (messagedata,ip,port,fileName) )
+            dksocket.send_string("%d %s %s %s" % (messagedata,ip,port,fileName))
+            dksocket.recv()
             #--------------------------------------------------------------------------------------------
             clientSocket.send_string("")
 

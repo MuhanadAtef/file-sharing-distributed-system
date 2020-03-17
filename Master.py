@@ -79,6 +79,7 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
     
     try:
         data = dksocket.recv_string()
+        dksocket.send_string("")
         messagedata ,ip ,port , fileName  = data.split()
     except zmq.error.Again:
         pass
@@ -100,6 +101,7 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
         for i in range(numberOfProcessesPerDataKeeper):
             masterDataFile[ip][str(8000+i)].append(messagedata)
         syncLock.release()
+        
     
     if messagedata=="3" :
         syncLock.acquire()
@@ -251,7 +253,7 @@ def selectMachineToCopyTo(syncLock,fileName):
 
 
 def NotifyMachineDataTransfer(source_machine, machine_to_copy,nrSocket):
-    msgToSrcMachine=["tcp://"+str(machine_to_copy[0])+":"+machine_to_copy[1],"Alberto Mardegan - Selfie del futuro.mp4","source_machine",str(source_machine[1]),str(source_machine[2])]
+    msgToSrcMachine=["tcp://"+str(machine_to_copy[0])+":"+machine_to_copy[1],source_machine[0],"source_machine",str(source_machine[1]),str(source_machine[2])]
     topic = "1"
     nrSocket.send("%d %d" % (topic, msgToSrcMachine)) #send to source machine ip and port of "machine_to_copy" and filename  and variable to know it is source_machine
 
