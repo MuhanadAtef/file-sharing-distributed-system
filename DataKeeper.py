@@ -101,7 +101,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
                 print("sent to Machine to copy")
                 f.close()
                 datakeeperSocket.recv()
-                datakeeperSocket.close()
+
                 "---------------------------------To handle Source machine busy---------------------------------------"
                 tocheck=3
                 ip=messagedata[3]
