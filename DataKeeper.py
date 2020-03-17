@@ -37,8 +37,8 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
     dksocket = context4.socket(zmq.REQ) #client
     for i in range(masterCount): # connect Datakeeper to all Masters sockets
         port =15000+i
-        dksocket.connect ("tcp://172.30.249.130:%s" % port) #hena el mafrood no7ot el ip bta3 el master 
-    dksocket.RCVTIMEO = 1
+        dksocket.connect ("tcp://172.30.249.130:%s" % port) 
+
 
     
     
@@ -103,7 +103,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
                 ip=messagedata[3]
                 port=messagedata[4]
                 fileName=""
-                dksocket.send_string(" %d %s %s %s" % (messagedata,ip,port,fileName) )
+                dksocket.send(" %d %s %s %s" % (messagedata,ip,port,fileName) )
                 "-------------------------------------------------------------------------------------------------------"
                 
 
