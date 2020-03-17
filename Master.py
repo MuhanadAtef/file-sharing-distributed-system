@@ -64,7 +64,7 @@ def masterClientConnection(clientSocket,syncLock):
         return
     # TODO: Function made by friedPotato7 use messege[upload/download,filename.mp4] and return arr[ip,port#,path of file] replaced by 8000
     # port = ["tcp://localhost:",8000,"Alberto Mardegan - Selfie del futuro.mp4"]
-    port = clientRequestHandler(message, masterDataFile, dataKeepersState,syncLock)
+    port = clientRequestHandler(message,syncLock)
     clientSocket.send_pyobj(port)
 
 def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPerDataKeeper, syncLock):
@@ -96,7 +96,7 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
     #Master - datakeeper success message
     if  messagedata=="2" :
         print("On Master index "+ str(masterIndex )+" File with Name: " + fileName +" Has Successfully uploaded on Machine with ip: "+ ip+"\n" )
-        addFile(ip,port,fileName,filesDictionary, numberOfProcessesPerDataKeeper)
+        addFile(ip,port,fileName, numberOfProcessesPerDataKeeper)
         dataKeepersState[ip][port] = True
         for i in range(numberOfProcessesPerDataKeeper):
             masterDataFile[ip][str(8000+i)].append(messagedata)
@@ -150,11 +150,12 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
         
         while initializedDataKeepers < numberOfNodes_Datakeeper * numberOfProcessesPerDataKeeper:
             address = masterReceiver.recv_pyobj()
-            masterDataFile["tcp://"+address["ip"]+":"][str(8000+address["nodeIndex"])] = []
-            dataKeepersState["tcp://"+address["ip"]+":"][str(8000+address["nodeIndex"])]= True
+            for i in range(numberOfProcessesPerDataKeeper):
+                masterDataFile["tcp://"+address["ip"]+":"][str(8000+i)] = []
+                dataKeepersState["tcp://"+address["ip"]+":"][str(8000+i)]= True
             if address["head"]:
                 iAmAliveDict[address["ip"]] = 0
-                headDataKeepers.append("tcp://"+str(address["ip"])+":"+str(5556+address["nodeIndex"]))
+                headDataKeepers.append("tcp://"+str(address["ip"])+":"+str(5556))
             initializedDataKeepers += 1
         masterHeadFinished = 1
         syncLock.release()
@@ -307,7 +308,7 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerData
 def main():
     numberOfthreadssOfMaster=5 #number of processes  multi-process(MasterTracker)
     numberOfprocessesOfNodes=3 #number of processes  multi-process(data keeper)
-    numberOfNodes=1 #number of nodes of data keeper
+    numberOfNodes=2 #number of nodes of data keeper
     startingPortMasterClient=7000 #first port between client/master
     startingPortDatakeeperClient=8000 #first port between client/datakeeper
     masterIp="tcp://172.30.249.130:" #master ip
