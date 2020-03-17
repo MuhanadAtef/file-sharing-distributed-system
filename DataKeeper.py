@@ -31,6 +31,18 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
     clientSocket=context2.socket(zmq.PAIR)
     clientSocket.bind("tcp://172.30.38.151:"+str(int(startingPortDatakeeperClient+processesIndex)))
     clientSocket.RCVTIMEO = 1
+    
+    # connect ports of datakeeper to send To Master
+    context4 = zmq.Context()
+    dksocket = context4.socket(zmq.REQ) #client
+    for i in range(masterCount): # connect Datakeeper to all Masters sockets
+        port =15000+i
+        dksocket.connect ("tcp://172.30.249.130:%s" % port) #hena el mafrood no7ot el ip bta3 el master 
+    dksocket.RCVTIMEO = 1
+
+    
+    
+    
     # connect ports of datakeeper to be used with Master
     context3 = zmq.Context()
     masterSocket = context3.socket(zmq.SUB)
@@ -92,7 +104,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
                 ip=messagedata[3]
                 port=messagedata[4]
                 fileName=""
-                socket.send_string("%d %d %s %s %s" % ( topic, messagedata,ip,port,fileName) )
+                dksocket.send_string(" %d %s %s %s" % (messagedata,ip,port,fileName) )
                 "-------------------------------------------------------------------------------------------------------"
                 
 
@@ -111,7 +123,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
             ip = getIp()
             print(fileName)
             port=str(int(startingPortDatakeeperClient+processesIndex))
-            socket.send_string("%d %d %s %s %s" % ( topic, messagedata,ip,port,fileName) )
+            dksocket.send_string("%d %s %s %s" % (messagedata,ip,port,fileName) )
             #--------------------------------------------------------------------------------------------
             clientSocket.send_string("")
 

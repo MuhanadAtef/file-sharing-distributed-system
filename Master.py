@@ -73,19 +73,27 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
     global filesDictionary
     global iAmAliveDict
     
+    contexttt = zmq.Context()
+    dksocket = contexttt.socket(zmq.REP)
+    socket.bind("tcp://172.30.249.130:%s"+str(15000+masterIndex))
+    
+    try:
+        data = dksocket.recv_string()
+        messagedata ,ip ,port , fileName  = data.split()
+    except zmq.error.Again:
+        pass
+    
     try:
         string = datakeeperSocket.recv_string()
         topic, messagedata ,ip ,NodeIndex , processesIndex  = string.split()
     except zmq.error.Again:
-        return
+        pass
+    
     if topic=="1" and messagedata=="1" :
         iAmAliveDict[ip] += 1
         print("Master index "+ str(masterIndex )+" Node " +NodeIndex+" Process "+ processesIndex +" is Alive\n")
     #Master - datakeeper success message
-    if topic=="1" and messagedata=="2" :
-        port=NodeIndex
-        fileName=processesIndex
-        syncLock.acquire()
+    if  messagedata=="2" :
         print("On Master index "+ str(masterIndex )+" File with Name: " + fileName +" Has Successfully uploaded on Machine with ip: "+ ip+"\n" )
         addFile(ip,port,fileName,filesDictionary, numberOfProcessesPerDataKeeper)
         dataKeepersState[ip][port] = True
@@ -93,8 +101,7 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
             masterDataFile[ip][str(8000+i)].append(messagedata)
         syncLock.release()
     
-    if topic=="1" and messagedata=="3" :
-        port = NodeIndex
+    if messagedata=="3" :
         syncLock.acquire()
         dataKeepersState[ip][port] = True
         syncLock.release()
