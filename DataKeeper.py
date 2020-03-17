@@ -47,12 +47,12 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
     context3 = zmq.Context()
     masterSocket = context3.socket(zmq.SUB)
     masterSocket.RCVTIMEO = 1
-    topicfilter = "1"
 
     for i in range(masterCount): # connect Datakeeper to all Masters sockets
         port =10000+i
         masterSocket.connect ("tcp://172.30.249.130:%s" % port) #hena el mafrood no7ot el ip bta3 el master 
-    #masterSocket.setsockopt(zmq.SUBSCRIBE, topicfilter)
+    topicfilter = "1"
+    masterSocket.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
     print("----------------------------------------------------------------------------------")
     print("-- Datakeeper connected to all master processes successfully (n-replicates) !!! --")
     print("----------------------------------------------------------------------------------")
@@ -80,15 +80,18 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
         # Nreplicates connection with master
         data3=[]
         topic="0"
-        messagedata=[]
+        messagedata = [None] * 5
         try:
-            data3 =masterSocket.recv() 
-            topic, messagedata = data3.split()   
+           # print ("try to recive from master \n")
+            data3 =masterSocket.recv_string() 
+            print ("recieved from master to srcmachine", data3)
+
+            topic, messagedata[0],messagedata[1],messagedata[2],messagedata[3],messagedata[4] = data3.split()   
         except zmq.error.Again:
             pass
 
         if topic=="1" and len(messagedata)==5: #message from Master to sourceMachine dataKeeper here source machine datakeeper send the video to another data keeper so at machine_to_copy it will get in "client upload" as if a client send this file to it
-            if messagedata[2]=="source_machine" and messagedata[3]==getIp():
+            if messagedata[2]=="source_machine" and messagedata[3]=="tcp://172.30.38.151:":
                 contextt = zmq.Context()
                 datakeeperSocket = contextt.socket(zmq.PAIR) # Datakeeper-Datakeeper connection
                 datakeeperSocket.connect(messagedata[0])
