@@ -82,16 +82,16 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
     
     try:
         data = successMsgDataKeeperSocket.recv_string()
-        print("el server 3amal recv lel data deh", data)
+        #print("el server 3amal recv lel data deh", data)
         successMsgDataKeeperSocket.send_string("done")
-        print("el data eli msh 3aref a3mlha split ahe:", data)
+        #print("el data eli msh 3aref a3mlha split ahe:", data)
         messagedata ,ip ,port , fileName  = data.split()
     except zmq.error.Again:
         messagedata = "-1"
         pass
     #Master - datakeeper success message
     if(messagedata != "-1"):
-        print("messagedata:", messagedata)
+        #print("messagedata:", messagedata)
     if  messagedata=="2" :
         syncLock.acquire()
         print("On Master index "+ str(masterIndex )+" File with Name: " + fileName +" Has Successfully uploaded on Machine with ip: "+ ip+"\n" )
@@ -100,16 +100,16 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
         for i in range(numberOfProcessesPerDataKeeper):
             masterDataFile["tcp://"+ip+":"][str(8000+i)].append(fileName)
         syncLock.release()
-        print("dataKeepersState:",dataKeepersState)
+        #print("dataKeepersState:",dataKeepersState)
         
     
     if messagedata=="3" :
         syncLock.acquire()
-        print(ip+port)
+        #print(ip+port)
         dataKeepersState[ip][port] = True
         doNreplicates=False
         syncLock.release()
-        print("dataKeepersState:",dataKeepersState)
+        #print("dataKeepersState:",dataKeepersState)
     
     try:
         string = datakeeperSocket.recv_string()
@@ -152,7 +152,7 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
     global iAmAliveDict
     global headDataKeepers
     
-    print("masterHeadFinished = ", masterHeadFinished)
+    #print("masterHeadFinished = ", masterHeadFinished)
     # Bind ports for datakeeper
     print("Master index = "+ str(masterIndex))
     headDataKeepers=[]
@@ -179,8 +179,8 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
             pass
 #            print("ana master rakam " + str(masterIndex) + " mestany papa yegeeb el shared memory")
     if masterIndex != 0:
-        print("I'm master #" + str(masterIndex) + " with the following data:")
-        print("headDataKeepers:", headDataKeepers)
+        #print("I'm master #" + str(masterIndex) + " with the following data:")
+        #print("headDataKeepers:", headDataKeepers)
     context = zmq.Context()
     datakeeperSocket = context.socket(zmq.SUB)
     for j in headDataKeepers:
@@ -223,7 +223,7 @@ def makeNReplicates(syncLock,nrSocket,n, masterIndex):
     for file in filesDictionary:
         instance_count = filesDictionary[file][1] #get el instance count bta3 file 
         if instance_count < n:
-            print("ana master rakam " + str(masterIndex) + " gowa el makeNReplicates")
+            #print("ana master rakam " + str(masterIndex) + " gowa el makeNReplicates")
             for i in range(n-instance_count):
                 # print("ana gowa el for loop bta3et mahmoud")
                 source_machine = getSourceMachine(file,syncLock)
@@ -252,7 +252,7 @@ def getSourceMachine(file,syncLock):
     srcMachine=[]
     srcMachine.append(file)
     syncLock.acquire()
-    print("gowa el getSourceMachine:",dataKeepersState)
+    #print("gowa el getSourceMachine:",dataKeepersState)
     for ip in filesDictionary[file][0]:
         for port in filesDictionary[file][0][ip]:
             if dataKeepersState[ip][port]:
@@ -293,10 +293,10 @@ def selectMachineToCopyTo(syncLock,fileName):
 
 def NotifyMachineDataTransfer(source_machine, machine_to_copy,nrSocket):
     msgToSrcMachine=[str(machine_to_copy[0])+machine_to_copy[1],source_machine[0],"source_machine",str(source_machine[1]),str(source_machine[2])]
-    print("msgToSrcMachine: ", msgToSrcMachine)
+    #print("msgToSrcMachine: ", msgToSrcMachine)
     topic = 1
     nrSocket.send_string("%d %s %s %s %s %s" % (topic, str(machine_to_copy[0])+machine_to_copy[1],source_machine[0],"source_machine",str(source_machine[1]),str(source_machine[2]))) #send to source machine ip and port of "machine_to_copy" and filename  and variable to know it is source_machine
-    print("msgToSrcMachine is sent")
+    print("Source machine is notified to send the file to Machine_to_copy")
 
 
 def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerDataKeeper, startingPortMasterClient,syncLock,replicatesCount):

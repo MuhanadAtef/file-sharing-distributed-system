@@ -10,14 +10,14 @@ def getIp():
 
 
 def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount,masterIp):
-    print("Node =" +str(NodeIndex)+" index = "+ str(processesIndex))
+    print( "Datakeeper index = "+ str(processesIndex))
 
     address = {"ip": "172.30.38.151","nodeIndex": NodeIndex  ,"head": True if processesIndex == 0 else False}
     context1 = zmq.Context()
     ipSender = context1.socket(zmq.PUSH)
     ipSender.connect("tcp://172.30.249.130:%s" % str(17777))
     ipSender.send_pyobj(address)
-    print("Ana datakeeper b3at le ip: tcp://172.30.249.130:%s" % str(17777))
+    #print("Ana datakeeper b3at le ip: tcp://172.30.249.130:%s" % str(17777))
     context = zmq.Context()
     if processesIndex==0:
         port = 5556+NodeIndex
@@ -84,24 +84,24 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
         try:
            # print ("try to recive from master \n")
             data3 =masterSocket.recv_string() 
-            print ("recieved from master to srcmachine", data3)
+            #print ("recieved from master to srcmachine", data3)
             topic, messagedata[0],messagedata[1],messagedata[2],messagedata[3],messagedata[4] = data3.split()   
         except zmq.error.Again:
             pass
 
         if topic=="1" and len(messagedata)==5: #message from Master to sourceMachine dataKeeper here source machine datakeeper send the video to another data keeper so at machine_to_copy it will get in "client upload" as if a client send this file to it
             if messagedata[2]=="source_machine" and messagedata[3]=="tcp://172.30.38.151:" and messagedata[4]==str(processesIndex+8000):
-                print("sending to Machine to copy")
+                #print("sending to Machine to copy")
                 contextt = zmq.Context()
                 datakeeperSocket = contextt.socket(zmq.PAIR) # Datakeeper-Datakeeper connection
                 datakeeperSocket.connect(messagedata[0])
                 f= open(messagedata[1],'rb')
                 video=f.read()
                 datakeeperSocket.send_pyobj([video,messagedata[1]])
-                print("sent to Machine to copy")
+                #print("sent to Machine to copy")
                 f.close()
                 a=datakeeperSocket.recv()
-                print(a)
+                #print(a)
                 
                 
 
