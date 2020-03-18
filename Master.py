@@ -206,7 +206,6 @@ def makeNReplicates(syncLock,nrSocket,n, masterIndex):
     global filesDictionary
     global masterDataFile
     global dataKeepersState
-    
     syncLock.acquire()
     if(len(filesDictionary) == 0):
         doNreplicates = False
@@ -226,21 +225,17 @@ def makeNReplicates(syncLock,nrSocket,n, masterIndex):
                     doNreplicates=False
                     print ("All source Machines are busy failed to Make n Replicates")
                     syncLock.release()
-                    return
+                    break
                 machine_to_copy_1 = selectMachineToCopyTo(syncLock,file)
                 if machine_to_copy_1 == False:
                     doNreplicates=False
                     print ("All Machines_To_Copy are busy failed to Make n Replicates")
                     syncLock.release()
-                    return
+                    break
                 NotifyMachineDataTransfer(source_machine, machine_to_copy_1,nrSocket)
             print("----------------------------------------------------------------------------------")
             print("--                            N Replicates Loading  !!!                         --")
             print("----------------------------------------------------------------------------------")
-        else:
-            doNreplicates = False
-            syncLock.release()
-            return
     syncLock.release()
 
 
