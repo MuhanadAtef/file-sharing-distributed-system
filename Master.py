@@ -330,7 +330,7 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerData
                         willDel.append(ip)
                         for i in filesDictionary:
                             filesDictionary[i][1] -= 1
-                            del filesDictionary[i][0][ip]
+                            del filesDictionary[i][0]["tcp://"+ip+":"]
                     else:
                         iAmAliveDict[ip] = timerCounter
                         
