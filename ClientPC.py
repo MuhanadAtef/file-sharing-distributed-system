@@ -27,6 +27,3 @@ if __name__ == '__main__':
         
     for j in processes:
         j.join()
-    print("Done!")
-    while(True):
-        []
