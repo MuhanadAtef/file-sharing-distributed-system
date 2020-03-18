@@ -108,6 +108,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
                 port=messagedata[4]
                 fileName="a"
                 dksocket.send_string(" %d %s %s %s" % (tocheck,ip,port,fileName) )
+                dksocket.recv_string()
                 "-------------------------------------------------------------------------------------------------------"
                 
 
