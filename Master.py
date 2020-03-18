@@ -212,7 +212,9 @@ def makeNReplicates(syncLock,nrSocket,n, masterIndex):
         syncLock.release()
         return
     syncLock.release()
-        
+     
+    noNreplicatesRequired = True
+    
     syncLock.acquire()
     for file in filesDictionary:
         instance_count = filesDictionary[file][1] #get el instance count bta3 file 
@@ -222,20 +224,19 @@ def makeNReplicates(syncLock,nrSocket,n, masterIndex):
                 # print("ana gowa el for loop bta3et mahmoud")
                 source_machine = getSourceMachine(file,syncLock)
                 if source_machine == False:
-                    doNreplicates=False
                     print ("All source Machines are busy failed to Make n Replicates")
-                    syncLock.release()
                     break
                 machine_to_copy_1 = selectMachineToCopyTo(syncLock,file)
                 if machine_to_copy_1 == False:
-                    doNreplicates=False
                     print ("All Machines_To_Copy are busy failed to Make n Replicates")
-                    syncLock.release()
                     break
+                noNreplicatesRequired = False
                 NotifyMachineDataTransfer(source_machine, machine_to_copy_1,nrSocket)
-            print("----------------------------------------------------------------------------------")
-            print("--                            N Replicates Loading  !!!                         --")
-            print("----------------------------------------------------------------------------------")
+                print("----------------------------------------------------------------------------------")
+                print("--                            N Replicates Loading  !!!                         --")
+                print("----------------------------------------------------------------------------------")
+    if(noNreplicatesRequired):
+        doNreplicates = False
     syncLock.release()
 
 
