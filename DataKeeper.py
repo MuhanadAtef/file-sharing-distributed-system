@@ -100,7 +100,10 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
                 datakeeperSocket.send_pyobj([video,messagedata[1]])
                 print("sent to Machine to copy")
                 f.close()
-                datakeeperSocket.recv()
+                a=datakeeperSocket.recv()
+                print(a)
+                
+                
 
                 "---------------------------------To handle Source machine busy---------------------------------------"
                 tocheck=3
@@ -130,7 +133,7 @@ def dataKeeper(NodeIndex,processesIndex,startingPortDatakeeperClient,masterCount
             dksocket.send_string("%d %s %s %s" % (messagedata,ip,port,fileName))
             dksocket.recv()
             #--------------------------------------------------------------------------------------------
-            clientSocket.send_string("")
+            clientSocket.send_string("done recieving")
 
         elif len(data)==1:  # Client download
             f= open(data[0],'rb')
