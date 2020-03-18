@@ -49,6 +49,10 @@ def clientRequestHandler(message, syncLock):
                         syncLock.release()
                         print(dataKeepersState)
                         return [i,j,message[1]]
+    elif message[0] == "downloaded":
+        dataKeepersState[message[1]][message[2]] = True
+        syncLock.release()
+        return ["confirmed"]
     syncLock.release()               
     return None
 
@@ -228,6 +232,7 @@ def makeNReplicates(syncLock,nrSocket,n, masterIndex):
                     break
                 machine_to_copy_1 = selectMachineToCopyTo(syncLock,file)
                 if machine_to_copy_1 == False:
+                    dataKeepersState[source_machine[1]][source_machine[2]] = True
                     print ("All Machines_To_Copy are busy failed to Make n Replicates")
                     break
                 noNreplicatesRequired = False
