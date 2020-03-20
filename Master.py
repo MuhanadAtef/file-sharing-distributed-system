@@ -82,16 +82,11 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
     
     try:
         data = successMsgDataKeeperSocket.recv_string()
-        #print("el server 3amal recv lel data deh", data)
         successMsgDataKeeperSocket.send_string("done")
-        #print("el data eli msh 3aref a3mlha split ahe:", data)
         messagedata ,ip ,port , fileName  = data.split()
     except zmq.error.Again:
         messagedata = "-1"
         pass
-    #Master - datakeeper success message
-    if(messagedata != "-1"):
-        #print("messagedata:", messagedata)
     if  messagedata=="2" :
         syncLock.acquire()
         print("On Master index "+ str(masterIndex )+" File with Name: " + fileName +" Has Successfully uploaded on Machine with ip: "+ ip+"\n" )
@@ -100,16 +95,13 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
         for i in range(numberOfProcessesPerDataKeeper):
             masterDataFile["tcp://"+ip+":"][str(8000+i)].append(fileName)
         syncLock.release()
-        #print("dataKeepersState:",dataKeepersState)
         
     
     if messagedata=="3" :
         syncLock.acquire()
-        #print(ip+port)
         dataKeepersState[ip][port] = True
         doNreplicates=False
         syncLock.release()
-        #print("dataKeepersState:",dataKeepersState)
     
     try:
         string = datakeeperSocket.recv_string()
@@ -119,7 +111,6 @@ def masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPe
     
     if topic=="1" and messagedata=="1" :
         iAmAliveDict[ip] += 1
-        # print("Master index "+ str(masterIndex )+" Node " +NodeIndex+" Process "+ processesIndex +" is Alive\n")
     
         
 
@@ -177,10 +168,6 @@ def initialzeDatakeeperMasterConnection(masterIndex,numberOfNodes_Datakeeper, nu
     else:
         while masterHeadFinished == 0:
             pass
-#            print("ana master rakam " + str(masterIndex) + " mestany papa yegeeb el shared memory")
-    if masterIndex != 0:
-        #print("I'm master #" + str(masterIndex) + " with the following data:")
-        #print("headDataKeepers:", headDataKeepers)
     context = zmq.Context()
     datakeeperSocket = context.socket(zmq.SUB)
     for j in headDataKeepers:
@@ -316,14 +303,12 @@ def masterTracker(masterIndex,numberOfNodes_Datakeeper, numberOfProcessesPerData
     successMsgDataKeeperSocket = successMsgSocket(masterIndex)
     startTime = time.time()
     while True:
-#        print("Master rakam " + str(masterIndex) + " by2olak ana mawgood")
         #Connecting with client
         masterClientConnection(clientSocket, syncLock)
         # Connecting with data 
         masterDatakeeperConnection(masterIndex,datakeeperSocket, numberOfProcessesPerDataKeeper, syncLock, successMsgDataKeeperSocket)
         if time.time() - startTime > 1:
             timerCounter += 1
-            # print("iAmAliveDict of master #" + str(masterIndex), iAmAliveDict)
             syncLock.acquire()
             willDel=[]
             for ip in iAmAliveDict:
