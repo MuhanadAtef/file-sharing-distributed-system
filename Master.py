@@ -22,7 +22,7 @@ filesDictionary = nested_dict(1, list)
 iAmAliveDict = nested_dict(1, int)
 headDataKeepers = {}
 doNreplicates = False
-masterIP = "172.30.249.130"
+masterIP = "10.147.20.210"
 
 def getIp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -364,9 +364,9 @@ def main():
     ################# PLEASE EITHER HARDCODE THE MASTER IP AND COMMENT THE FOLLOWING INPUT BLOCK OR INPUT THEM THROUGH CLI ###################
     ##############################################################################################################################################
     
-    print("/////////////////////////////////////////////////////////////////////\n")
-    print("//////////////// Please enter the master server IP //////////////////\n")
-    print("/////////////////////////////////////////////////////////////////////\n")
+    print("/////////////////////////////////////////////////////////////////////")
+    print("//////////////// Please enter the master server IP //////////////////")
+    print("/////////////////////////////////////////////////////////////////////")
     masterIP = input()
     
     ##############################################################################################################################################
