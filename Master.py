@@ -41,8 +41,8 @@ def clientRequestHandler(message, syncLock):
                 if(dataKeepersState[i][j]):
                     dataKeepersState[i][j] = False  # Make Port Busy
                     syncLock.release()
-                    print(dataKeepersState)
-                    return [i, j, message[1]]
+                    print("Datakeeper with ip " + i + " and port " + str(j) + " is now busy")
+                    return [i,j,message[1]]
     elif message[0] == "download":
         for i in masterDataFile:
             for j in masterDataFile[i]:
@@ -50,10 +50,11 @@ def clientRequestHandler(message, syncLock):
                     if k == message[1] and dataKeepersState[i][j]:
                         dataKeepersState[i][j] = False  # Make Port Busy
                         syncLock.release()
-                        print(dataKeepersState)
-                        return [i, j, message[1]]
+                        print("Datakeeper with ip " + i + " and port " + str(j) + " is now busy")
+                        return [i,j,message[1]]
     elif message[0] == "downloaded":
         dataKeepersState[message[1]][message[2]] = True
+        print("Datakeeper with ip " + message[1] + " and port " + str(message[2]) + " is now available")
         syncLock.release()
         return ["confirmed"]
     syncLock.release()
@@ -68,7 +69,7 @@ def masterClientConnection(clientSocket, syncLock):
     message = []
     try:
         message = clientSocket.recv_pyobj()
-        print(message)
+        print("A client is " + message[0] + "ing " + message[1])
     except zmq.error.Again:
         return
     # TODO: Function made by friedPotato7 use messege[upload/download,filename.mp4] and return arr[ip,port#,path of file] replaced by 8000
@@ -93,9 +94,8 @@ def masterDatakeeperConnection(masterIndex, datakeeperSocket, numberOfProcessesP
         pass
     if messagedata == "2":
         syncLock.acquire()
-        print("On Master index " + str(masterIndex)+" File with Name: " +
-              fileName + " Has Successfully uploaded on Machine with ip: " + ip+"\n")
-        addFile(ip, port, fileName, numberOfProcessesPerDataKeeper)
+        print("Master #"+ str(masterIndex)+": file with name: " + fileName +" has been successfully uploaded on machine with ip: "+ ip+"\n" )
+        addFile(ip,port,fileName, numberOfProcessesPerDataKeeper)
         dataKeepersState["tcp://"+ip+":"][port] = True
         for i in range(numberOfProcessesPerDataKeeper):
             masterDataFile["tcp://"+ip+":"][str(8000+i)].append(fileName)
@@ -109,12 +109,16 @@ def masterDatakeeperConnection(masterIndex, datakeeperSocket, numberOfProcessesP
 
     try:
         string = datakeeperSocket.recv_string()
-        topic, messagedata, ip, NodeIndex, processesIndex = string.split()
+        print(string)
+        topic, messagedata ,ip ,NodeIndex , processesIndex  = string.split()
     except zmq.error.Again:
         return
 
     if topic == "1" and messagedata == "1":
         iAmAliveDict[ip] += 1
+        print("Datakeeper with ip " + ip + " is alive")
+    
+        
 
 
 def addFile(ip, port, fileName, numberOfProcessesPerDataKeeper):
@@ -146,11 +150,10 @@ def initialzeDatakeeperMasterConnection(masterIndex, numberOfNodes_Datakeeper, n
     global dataKeepersState
     global iAmAliveDict
     global headDataKeepers
-
-    #print("masterHeadFinished = ", masterHeadFinished)
+    
     # Bind ports for datakeeper
-    print("Master index = " + str(masterIndex))
-    headDataKeepers = []
+    print("Master #"+ str(masterIndex) + " is waiting for Datakeepers")
+    headDataKeepers=[]
     if masterIndex == 0:
         context1 = zmq.Context()
         masterReceiver = context1.socket(zmq.PULL)
@@ -160,6 +163,7 @@ def initialzeDatakeeperMasterConnection(masterIndex, numberOfNodes_Datakeeper, n
 
         while initializedDataKeepers < numberOfNodes_Datakeeper * numberOfProcessesPerDataKeeper:
             address = masterReceiver.recv_pyobj()
+            print("Datakeeper with address " + str(address["ip"]) + " is connected to Master#" + str(masterIndex))
             for i in range(numberOfProcessesPerDataKeeper):
                 masterDataFile["tcp://"+address["ip"]+":"][str(8000+i)] = []
                 dataKeepersState["tcp://" +
@@ -177,6 +181,7 @@ def initialzeDatakeeperMasterConnection(masterIndex, numberOfNodes_Datakeeper, n
     context = zmq.Context()
     datakeeperSocket = context.socket(zmq.SUB)
     for j in headDataKeepers:
+        print(j)
         datakeeperSocket.connect(j)
     topicfilter = "1"
     datakeeperSocket.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
@@ -219,10 +224,8 @@ def makeNReplicates(syncLock, nrSocket, n, masterIndex):
         # get el instance count bta3 file
         instance_count = filesDictionary[file][1]
         if instance_count < n:
-            #print("ana master rakam " + str(masterIndex) + " gowa el makeNReplicates")
             for i in range(n-instance_count):
-                # print("ana gowa el for loop bta3et mahmoud")
-                source_machine = getSourceMachine(file, syncLock)
+                source_machine = getSourceMachine(file,syncLock)
                 if source_machine == False:
                     print("All source Machines are busy failed to Make n Replicates")
                     break
@@ -253,7 +256,6 @@ def getSourceMachine(file, syncLock):
     srcMachine = []
     srcMachine.append(file)
     syncLock.acquire()
-    #print("gowa el getSourceMachine:",dataKeepersState)
     for ip in filesDictionary[file][0]:
         for port in filesDictionary[file][0][ip]:
             if dataKeepersState[ip][port]:
@@ -292,10 +294,8 @@ def selectMachineToCopyTo(syncLock, fileName):
     return False
 
 
-def NotifyMachineDataTransfer(source_machine, machine_to_copy, nrSocket):
-    msgToSrcMachine = [str(machine_to_copy[0])+machine_to_copy[1], source_machine[0],
-                       "source_machine", str(source_machine[1]), str(source_machine[2])]
-    #print("msgToSrcMachine: ", msgToSrcMachine)
+def NotifyMachineDataTransfer(source_machine, machine_to_copy,nrSocket):
+    msgToSrcMachine=[str(machine_to_copy[0])+machine_to_copy[1],source_machine[0],"source_machine",str(source_machine[1]),str(source_machine[2])]
     topic = 1
     # send to source machine ip and port of "machine_to_copy" and filename  and variable to know it is source_machine
     nrSocket.send_string("%d %s %s %s %s %s" % (topic, str(
@@ -332,11 +332,9 @@ def masterTracker(masterIndex, numberOfNodes_Datakeeper, numberOfProcessesPerDat
             syncLock.acquire()
             willDel = []
             for ip in iAmAliveDict:
-                if iAmAliveDict[ip]+10 < timerCounter:
-                    if dataKeepersState["tcp://"+ip+":"][str(8000)] == True:
-                        print("master index " + str(masterIndex))
-                        print("Datakeeper on ip: " + ip +
-                              " is dead, removing it from Master shared memory...")
+                if iAmAliveDict[ip]+50 < timerCounter:
+                    if dataKeepersState["tcp://"+ip+":"][str(8000)]==True :                         
+                        print("Datakeeper on ip: " + ip + " is dead, removing it from Master shared memory...")
                         del masterDataFile["tcp://"+ip+":"]
                         del dataKeepersState["tcp://"+ip+":"]
                         willDel.append(ip)
