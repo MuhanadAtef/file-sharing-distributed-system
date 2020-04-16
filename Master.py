@@ -4,6 +4,12 @@ import zmq
 import socket
 import time
 
+def nested_dict(n, type):
+    if n == 1:
+        return defaultdict(type)
+    else:
+        return defaultdict(lambda: nested_dict(n-1, type))
+
 masterHeadFinished = 0
 # masterDataFile = { ip1: { port1: [ file1, file2, ... ], port2: [...], ... }, ip2: {...} }
 masterDataFile = nested_dict(2, list)
@@ -17,12 +23,6 @@ iAmAliveDict = nested_dict(1, int)
 headDataKeepers = {}
 doNreplicates = False
 masterIP = "172.30.249.130"
-
-def nested_dict(n, type):
-    if n == 1:
-        return defaultdict(type)
-    else:
-        return defaultdict(lambda: nested_dict(n-1, type))
 
 def getIp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -367,7 +367,7 @@ def main():
     print("/////////////////////////////////////////////////////////////////////\n")
     print("//////////////// Please enter the master server IP //////////////////\n")
     print("/////////////////////////////////////////////////////////////////////\n")
-    input(masterIP)
+    masterIP = input()
     
     ##############################################################################################################################################
     
