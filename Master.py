@@ -22,7 +22,7 @@ filesDictionary = nested_dict(1, list)
 iAmAliveDict = nested_dict(1, int)
 headDataKeepers = {}
 doNreplicates = False
-masterIP = "192.168.192.210"
+masterIP = "10.147.18.210"
 
 def getIp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -95,6 +95,7 @@ def masterDatakeeperConnection(masterIndex, datakeeperSocket, numberOfProcessesP
     if messagedata == "2":
         syncLock.acquire()
         print("Master #"+ str(masterIndex)+": file with name: " + fileName +" has been successfully uploaded on machine with ip: "+ ip+"\n" )
+        doNreplicates=False # To unlock DoNreplicates in case SrcMachine send file to Machine_to_copy 
         addFile(ip,port,fileName, numberOfProcessesPerDataKeeper)
         dataKeepersState["tcp://"+ip+":"][port] = True
         for i in range(numberOfProcessesPerDataKeeper):
@@ -104,7 +105,7 @@ def masterDatakeeperConnection(masterIndex, datakeeperSocket, numberOfProcessesP
     if messagedata == "3":
         syncLock.acquire()
         dataKeepersState[ip][port] = True
-        doNreplicates = False
+        # doNreplicates = False
         syncLock.release()
 
     try:
