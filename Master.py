@@ -22,7 +22,7 @@ filesDictionary = nested_dict(1, list)
 iAmAliveDict = nested_dict(1, int)
 headDataKeepers = {}
 doNreplicates = False
-masterIP = "10.147.20.210"
+masterIP = "192.168.192.210"
 
 def getIp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -109,14 +109,13 @@ def masterDatakeeperConnection(masterIndex, datakeeperSocket, numberOfProcessesP
 
     try:
         string = datakeeperSocket.recv_string()
-        print(string)
         topic, messagedata ,ip ,NodeIndex , processesIndex  = string.split()
     except zmq.error.Again:
         return
 
     if topic == "1" and messagedata == "1":
         iAmAliveDict[ip] += 1
-        print("Datakeeper with ip " + ip + " is alive")
+#        print("Datakeeper with ip " + ip + " is alive")
     
         
 
@@ -181,7 +180,6 @@ def initialzeDatakeeperMasterConnection(masterIndex, numberOfNodes_Datakeeper, n
     context = zmq.Context()
     datakeeperSocket = context.socket(zmq.SUB)
     for j in headDataKeepers:
-        print(j)
         datakeeperSocket.connect(j)
     topicfilter = "1"
     datakeeperSocket.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
@@ -362,10 +360,10 @@ def main():
     ################# PLEASE EITHER HARDCODE THE MASTER IP AND COMMENT THE FOLLOWING INPUT BLOCK OR INPUT THEM THROUGH CLI ###################
     ##############################################################################################################################################
     
-    print("/////////////////////////////////////////////////////////////////////")
-    print("//////////////// Please enter the master server IP //////////////////")
-    print("/////////////////////////////////////////////////////////////////////")
-    masterIP = input()
+#    print("/////////////////////////////////////////////////////////////////////")
+#    print("//////////////// Please enter the master server IP //////////////////")
+#    print("/////////////////////////////////////////////////////////////////////")
+#    masterIP = input()
     
     ##############################################################################################################################################
     
