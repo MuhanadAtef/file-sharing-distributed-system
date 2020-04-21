@@ -1,6 +1,6 @@
 import multiprocessing 
 import Master    
-import client
+import Client
 import DataKeeper
     
 
