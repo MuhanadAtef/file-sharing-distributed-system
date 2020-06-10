@@ -1,8 +1,10 @@
-from threading import Thread, RLock
-from collections import defaultdict
-import zmq
 import socket
 import time
+from collections import defaultdict
+from threading import RLock, Thread
+
+import zmq
+
 
 def nested_dict(n, type):
     if n == 1:
@@ -361,10 +363,10 @@ def main():
     ################# PLEASE EITHER HARDCODE THE MASTER IP AND COMMENT THE FOLLOWING INPUT BLOCK OR INPUT THEM THROUGH CLI ###################
     ##############################################################################################################################################
     
-#    print("/////////////////////////////////////////////////////////////////////")
-#    print("//////////////// Please enter the master server IP //////////////////")
-#    print("/////////////////////////////////////////////////////////////////////")
-#    masterIP = input()
+   print("/////////////////////////////////////////////////////////////////////")
+   print("//////////////// Please enter the master server IP //////////////////")
+   print("/////////////////////////////////////////////////////////////////////")
+   masterIP = input()
     
     ##############################################################################################################################################
     
