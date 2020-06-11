@@ -1,5 +1,3 @@
-<!-- PROJECT LOGO -->
-
 <br />
 <p align="center">
   <a href="https://github.com/Muhanad23/file-sharing-distributed-system">
@@ -13,8 +11,6 @@
 them again while maintaining data replication over multiple machines
   </p>
 </p>
-
-<!-- TABLE OF CONTENTS -->
 
 ## Table of Contents
 
@@ -30,8 +26,6 @@ them again while maintaining data replication over multiple machines
 - [Prerequisites](#prerequisites)
 - [Running](#running)
 
-<!-- ABOUT THE PROJECT -->
-
 ## About The Project
 
 ![System Structure][system-architecture]
@@ -42,7 +36,7 @@ them again while maintaining data replication over multiple machines
 
 ### Data Keepers Status Tracking
 
-- [Publisher - Subscriber](https://learning-0mq-with-pyzmq.readthedocs.io/en/latest/pyzmq/patterns/pubsub.html) messaging pattern is used to implement this function. Every 1 second, each data keeper node sends an online status confirmation message to the master tracker node. The master tracker node then update the look-up table mentioned above. If one of the data keeper nodes are down it will change the corresponding cell in the respective look-up table.
+- [Publisher - Subscriber](https://learning-0mq-with-pyzmq.readthedocs.io/en/latest/pyzmq/patterns/pubsub.html) messaging pattern is used to implement this functionality. Every 1 second, each data keeper node sends an online status confirmation message to the master tracker node. The master tracker node then update the look-up table mentioned above. If one of the data keeper nodes are down it will change the corresponding cell in the respective look-up table.
 
 ### Master Tracker
 
@@ -89,8 +83,8 @@ For a client to download a file to a cluster, the following protocol is followed
 - Install the virtualenv package using `pip install virtualenv`
 - Create a virtual environment inside the project directory by running `virtualenv venv`
 - Activate the virtual environment
-    - Windows: `mypthon\Scripts\activate`
-    - Linux/OSX: `source mypython/bin/activate`
+    - Windows: `venv\Scripts\activate`
+    - Linux/OSX: `venv mypython/bin/activate`
 - Install PyZMQ by running this command `pip install pyzmq`
 
 ## Running
@@ -99,7 +93,5 @@ For a client to download a file to a cluster, the following protocol is followed
 - To run a Data Keeper instance: `python DatakeeperPC.py`
 - To run a Master instance: `python Master.py`
 - Enter the IP of each respective instance (without `tcp://`)
-
-<!-- MARKDOWN LINKS & IMAGES -->
 
 [system-architecture]: assets/system-architecture.png
