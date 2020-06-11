@@ -84,7 +84,7 @@ For a client to download a file to a cluster, the following protocol is followed
 - Create a virtual environment inside the project directory by running `virtualenv venv`
 - Activate the virtual environment
     - Windows: `venv\Scripts\activate`
-    - Linux/OSX: `venv mypython/bin/activate`
+    - Linux/OSX: `source venv/bin/activate`
 - Install PyZMQ by running this command `pip install pyzmq`
 
 ## Running
