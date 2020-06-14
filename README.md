@@ -25,6 +25,7 @@ them again while maintaining data replication over multiple machines
   - [Built With](#built-with)
 - [Prerequisites](#prerequisites)
 - [Running](#running)
+- [Contributors](#contributors)
 
 ## About The Project
 
@@ -93,5 +94,12 @@ For a client to download a file to a cluster, the following protocol is followed
 - To run a Data Keeper instance: `python DatakeeperPC.py`
 - To run a Master instance: `python Master.py`
 - Enter the IP of each respective instance (without `tcp://`)
+
+## Contributors
+
+* [Khaled Amgad](https://github.com/KhaledAmgad)
+* [Mahmoud Mohamad](https://github.com/mmmacmp)
+* [Muhanad Atef](https://github.com/Muhanad23)
+* [Nader AbdAlGhani](https://github.com/naderabdalghani)
 
 [system-architecture]: assets/system-architecture.png
