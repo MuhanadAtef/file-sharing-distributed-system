@@ -99,7 +99,7 @@ For a client to download a file to a cluster, the following protocol is followed
 
 * [Khaled Amgad](https://github.com/KhaledAmgad)
 * [Mahmoud Mohamad](https://github.com/mmmacmp)
-* [Muhanad Atef](https://github.com/Muhanad23)
+* [Muhanad Atef](https://github.com/MuhanadAtef)
 * [Nader AbdAlGhani](https://github.com/naderabdalghani)
 
 [system-architecture]: assets/system-architecture.png
